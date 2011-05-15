@@ -1,0 +1,1839 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml2/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<HEAD>
+<TITLE>CodeGuru: Windows Thread Pooling</TITLE>
+<META Name="description" Content="Thread pooling describes a technique by which threads of execution are managed and to which work is distributed.  Additional semantics such as concurrency control may also be defined. Thread pooling is a nice way to:
+
+Manage complexity
+Make your applications scale
+Introduce new code while minimizing risk
+ By PlugwareSolutionsLtd.">
+<META NAME="Author" CONTENT="PlugwareSolutionsLtd">
+<META Name="keywords" Content="">
+<META NAME="date" CONTENT="20040428">
+<META NAME="MS.LOCALE" CONTENT="en-US">
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8"> 
+
+<META NAME="Search.TopicType" content="kbArticle" />
+<META NAME="Search.PublishDate" content="Wed, 28 Apr 2004 00:00:00 -0400" />
+<META NAME="Search.ReviseDate" content="Tue, 27 Apr 2004 00:00:00 -0400" />
+<META NAME="Search.UserRating" content="100" />
+
+<link rel="stylesheet" media="all" type="text/css" href="/css/flyout.css" />
+
+<!--[if lte IE 6]>
+<link rel="stylesheet" media="all" type="text/css" href="/css/flyout_ie.css" />
+<![endif]-->
+
+<link REL="stylesheet" HREF="/css/newstyle.css" TYPE="text/css">
+<script language="JavaScript" type="text/javascript">
+<!--
+
+function show(object) {
+if (document.getElementById) {
+document.getElementById(object).style.visibility = 'visible';
+}
+else if (document.layers && document.layers[object]) {
+document.layers[object].visibility = 'visible';
+}
+else if (document.all) {
+document.all[object].style.visibility = 'visible';
+}
+}
+
+function hide(object) {
+if (document.getElementById) {
+document.getElementById(object).style.visibility = 'hidden';
+}
+else if (document.layers && document.layers[object]) {
+document.layers[object].visibility = 'hidden';
+}
+else if (document.all) {
+document.all[object].style.visibility = 'hidden';
+}
+}
+
+//-->
+</script></HEAD>
+<BODY BGCOLOR="#ffffff" LEFTMARGIN="0" TOPMARGIN="4" MARGINWIDTH="0" MARGINHEIGHT="4">
+<script language="JavaScript1.2" src="/hierscripts/HM_Loader.js" type="text/javascript"></script>
+<center>
+<script type="text/javascript" src="/icom_includes/toolbars/globaltoolbar/scripts/fsmenu_commented.js"></script>
+<script type="text/javascript" src="/icom_includes/toolbars/globaltoolbar/scripts/menuset.js"></script>
+<script type="text/javascript" src="/icom_includes/toolbars/globaltoolbar/scripts/menusetv2.js"></script>
+<script type="text/javascript" src="/icom_includes/toolbars/globaltoolbar/scripts/menusetv3.js"></script>
+<link rel="stylesheet" type="text/css" href="/icom_includes/toolbars/globaltoolbar/css/listmenu_h.css" />
+<link rel="stylesheet" type="text/css" href="/icom_includes/toolbars/globaltoolbar/css/listmenu_h_settings.css" />
+
+<style type="text/css">
+
+#navitoolbarcontainer a {
+	line-height: 16px;
+	}
+
+</style>
+
+
+
+<!-- START TOP TOOLBAR -->
+<div id="heightcontainer"></div>		
+
+<div style="width: 100%;" id="navitoolbarcontainer">
+		  <div style="margin: 0px; padding: 0px; width: 100%;">
+		  <div id="navitile" style="width: 100%;">
+			<div style="padding-left: 0px; margin-left: 0px; padding-top: 5px; padding-right: 5px; float: left; white-space: nowrap;">
+
+			<a title="View Internet.com - The Network for Technology Professionals" href="http://www.internet.com/" class="gt"><img alt="Internet.com - The Network for Technology Professionals" src="/icom_includes/toolbars/globaltoolbar/img/icom_logo_global.png" border="0"></a>
+
+			</div>		
+				<ul class="menulist" id="listMenuRoot" style="height:22px;">
+				 <li style="margin-top:0px;">
+				  <a class="gt"  href="http://www.internet.com/it/" style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration:none;"> <b>IT</b> </a>
+
+				  
+				  
+				  <ul id="listMenu-id-1">
+                   <li style="background-image:url(/icom_includes/toolbars/globaltoolbar/img/background_topsub.jpg);  background-repeat:repeat-x;"><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none; font-weight: bold;" href="http://www.internet.com/it">internet.com/IT</a></li>
+		   <li style="background-image:url(/icom_includes/toolbars/globaltoolbar/img/background_topsub.jpg);  background-repeat:repeat-x;"><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none; font-weight: bold;" href="http://www.internet.com/cio">internet.com/CIO</a></li>  
+                   <li style="background-image:url(/icom_includes/toolbars/globaltoolbar/img/background_topsub.jpg);  background-repeat:repeat-x;"><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none; font-weight: bold;" href="http://www.internet.com/security">internet.com/Security</a></li>  
+                   <li style="background-image:url(/icom_includes/toolbars/globaltoolbar/img/background_topsub.jpg);  background-repeat:repeat-x;"><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none; font-weight: bold;" href="http://www.internet.com/networking">internet.com/Networking</a></li>  
+                   <li style="background-image:url(/icom_includes/toolbars/globaltoolbar/img/background_topsub.jpg);  background-repeat:repeat-x;"><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none; font-weight: bold;" href="http://www.internet.com/storage">internet.com/Storage</a></li>  
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.bitaplanet.com">bITa Planet</a></li>  
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.cioupdate.com">CIO Update</a></li> 
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.databasejournal.com/">Database Journal</a></li>   
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.datamation.com">Datamation</a></li> 
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.enterpriseitplanet.com/">Enterprise IT Planet</a></li>   
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.enterprisenetworkingplanet.com">Enterprise Networking Planet</a></li> 
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.enterprisestorageforum.com">Enterprise Storage Forum</a></li> 
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.esecurityplanet.com">eSecurity Planet</a></li> 
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.hardwarecentral.com/">Hardware Central</a></li>   
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.intranetjournal.com">Intranet Journal</a></li> 
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.isp-planet.com/">ISP Planet</a></li> 
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.itsmwatch.com">ITSMwatch</a></li> 
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.itchannelplanet.com/">IT Channel Planet</a></li> 
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.linuxplanet.com/">Linux Planet</a></li>
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.opennetworkstoday.com">Open Networks Today</a></li>
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://serverwatch.internet.com/">ServerWatch</a></li>   
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.voipplanet.com/">VoIP Planet</a></li>   
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.webvideouniverse.com">WebVideoUniverse</a> 
+				   </li><li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.wi-fiplanet.com/">Wi-Fi Planet</a></li>   
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.windrivers.com/">WinDrivers.com</a></li>   
+                   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.internet.com/sections/">Network Map</a></li>  
+				  </ul>
+				 </li>
+				
+				 <li style="margin-top:0px;">
+				  <a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.internet.com/developer" class="gt"> <b>Developer</b> </a>
+				   <ul id="listMenu-id-2">
+                   <li style="background-image:url(/icom_includes/toolbars/globaltoolbar/img/background_topsub.jpg);  background-repeat:repeat-x;"><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none; font-weight: bold;" href="http://www.internet.com/developer/">internet.com/Developer</a></li>
+                   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.15seconds.com/">15 Seconds</a></li>
+
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.4guysfromrolla.com/">4GuysFromRolla.com</a></li>
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.asp101.com/">ASP101</a></li>		
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.codeguru.com">CodeGuru</a></li>
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.developer.com">Developer.com</a></li>
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.devx.com">DevX</a></li>
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.flashkit.com/">FlashKit.com</a></li>
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.developer.com/java/">Gamelan</a></li>
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.jars.com">JARS</a></li>
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.javascript.com/">JavaScript.com</a></li>
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://javascriptsource.com/">JavaScriptSource</a></li>
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.phpbuilder.com/">PHPBuilder.com</a></li>   
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.scriptsearch.com/">ScriptSearch</a></li>
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.vbforums.com/">VB Forums</a></li>
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.vbwire.com/">VB Wire</a></li>
+
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.webdeveloper.com/">WebDeveloper.com</a></li>
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.webreference.com/">Webreference</a></li>
+                   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.internet.com/sections/">Network Map</a></li>  
+				  </ul>
+
+				 </li>
+				
+				 <li style="margin-top:0px;">
+				  <a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.internetnews.com/" class="gt"> <b>News</b> </a>
+				   <ul id="listMenu-id-3">
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.internetnews.com/">Internetnews.com</a></li>
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.linuxtoday.com/">Linux Today</a></li>   		   
+                   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.internet.com/sections/">Network Map</a></li>  
+				  </ul>
+				 </li>
+				
+				
+				 <li style="margin-top:0px;"><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.smallbusinesscomputing.com/" class="gt"> <b>Small Business</b> </a>
+				   <ul id="listMenu-id-4">
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.ecommerce-guide.com/">Ecommerce Guide</a></li>
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.refer-it.com/">Refer-It</a></li>
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.smallbusinesscomputing.com/">SmallBusinessComputing</a></li>
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.webopedia.com/">Webopedia</a></li>
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.winplanet.com/">WinPlanet</a></li>
+                   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.internet.com/sections/">Network Map</a></li>  
+				  </ul>
+				 </li>
+				 
+				
+				 <li style="margin-top:0px;"><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.internet.com/personaltechnology/" class="gt"> <b>Personal Tech</b> </a>
+
+				   <ul id="listMenu-id-5">
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.blackberrytoday.com/">BlackBerryToday</a></li>
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://blog.iphoneguide.com/">iPhoneGuide</a></li>
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.jumbo.com/">Jumbo</a></li>
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.megapixel.net">Megapixel.net</a></li>
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.palmblvd.com/">Palm Boulevard</a></li>
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.pdastreet.com/">PDAStreet</a></li>
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.pocketpcwire.com/">PocketPCWire</a></li>
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.sharkyextreme.com/">SharkyExtreme</a></li>
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.smartphonetoday.com/">Smart Phone Today</a></li>
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://asp.thelist.com/">The List: ASPs</a></li>
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://broadband.thelist.com/">The List: Broadband</a></li>
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.thelist.com/">The List: ISPs</a></li>
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://webhosts.thelist.com/">The List: WebHosts</a></li>
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://webdesign.thelist.com/">The List: WebDesigners</a></li>
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.wi-fihotspotlist.com/">Wi-FiHotSpotList</a></li>
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.windowsmobiletoday.com/">WindowsMobileToday</a></li>
+                   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.internet.com/sections/">Network Map</a></li>  
+				  </ul>
+				 </li>		
+				</ul>
+				
+				
+				
+				<ul style="height: 22px;" id="listMenuv2Root" class="menulistv2">
+				 <li style="margin-top:0px;">
+
+				  <a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica;" href="http://www.jupiterevents.com/" class="gt"> Events </a>
+
+				  <ul id="listMenuv2-id-1">
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.jupiterevents.com/">JupiterEvents</a></li>
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.internet.com/webcasts">internet.com/webcasts</a></li>
+				  </ul>
+				 </li>
+
+				 <li style="margin-top:0px;"><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.justtechjobs.com" class="gt"> Jobs </a></li>
+				 <li style="margin-top:0px;"><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.jupitermedia.com/partners/" class="gt"> Partners </a></li>
+
+				 <li style="margin-top:0px;">
+				  <a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.internet.com/solutions" class="gt"> Solutions </a>
+				  <ul id="listMenuv2-id-2">
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.internet.com/ebook"> eBooks </a></li>
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.internet.com/video"> Video </a></li>
+				  </ul>
+				 </li>
+
+				 <li style="margin-top:0px;"><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration:none;" href="http://www.internetshopper.com/" class=""gt> Shop </a></li>
+
+				 
+				</ul>
+		
+		
+				<ul class="menulistv3" id="listMenuv3Root" style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; height: 22px;">
+				 <li style="margin-top:0px;"><a class="gt" href="http://member.internet.com/" style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration:none"> Login </a>
+
+				 
+				  <ul id="listMenuv3-id-1">
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://member.internet.com/profile/postal">Manage My Profile</a></li>
+
+				  </ul>
+
+				 
+				 
+				 </li>
+				 <li style="margin-top:0px;"><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://member.internet.com/register" class="gt">Register </a>
+				 
+				   <ul id="listMenuv3-id-2">
+				   <li><a style="color: #fff; font-size: 10px; font-family: arial,verdana,helvetica; text-decoration: none;" href="http://www.internet.com/WhyJoin">Why Join?</a></li>
+				  </ul>
+				 
+				 
+				 </li>
+		
+				 
+				</ul>
+
+		<div style="margin-top: 0px;" id="lightgrey">
+
+		<form target="_top" action="http://search.internet.com/www.jupiterweb.com" method="post">
+			<input value="1" name="IC_Summary" type="hidden">
+			<input value="0" name="IC_StartNumber" type="hidden">
+			<input value="10" name="IC_BatchSize" type="hidden">
+
+			<input value="50" name="IC_RelevanceThreshold" type="hidden">
+			<input value="all" name="IC_QueryDatabase" type="hidden">
+			<input title="Search Internet.com" onFocus="this.value='';" class="inputglobal" size="11" name="IC_QueryText" value="" type="text">
+
+			<input alt="go" src="/icom_includes/toolbars/globaltoolbar/img/searchgt_button.gif" name="SUBMIT" value="Find" type="image" align="absmiddle" border="0" height="18" vspace="2" width="42">
+		</form>
+		</div>
+	</div>
+	</div>
+
+	<!--
+	<div style="width:100%;">
+    	<img src="/icom_includes/toolbars/globaltoolbar/img/shad.png" style="width:100%; height:11px; padding:0px; margin-top:22px;" />
+	</div>
+	-->
+	</div>
+   
+   <script src="/icom_includes/footers/scripts/pngadapt.js" type="text/javascript"></script>
+
+
+<!-- END TOP TOOLBAR -->
+<IMG SRC="http://www.codeguru.com/RealMedia/ads/adstream_lx.ads/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/717692890/house_ribbon/OasDefault/Testing_GlobalToolbar_1f/globaltoolbarE.html/64616632643839373438306461383030?_RM_EMPTY_" WIDTH=2 HEIGHT=2><p><script language="JavaScript1.1">
+<!--
+var TFSMFlash_VERSION=6;
+var TFSMFlash_WMODE="window";
+var TFSMFlash_OASCLICK="http://www.codeguru.com/RealMedia/ads/click_lx.ads/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/1381524127/468x60-1/OasDefault/Sun_WC_5_22_GEMS_2af/webcast_5_22_8_leo.html/64616632643839373438306461383030";
+var TFSMFlash_SWFCLICKVARIABLE="?clickTAG=http://www.codeguru.com/RealMedia/ads/click_lx.ads/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/1381524127/468x60-1/OasDefault/Sun_WC_5_22_GEMS_2af/webcast_5_22_8_leo.html/64616632643839373438306461383030?";
+var TFSMFlash_SWFFILE="http://www.codeguru.com/RealMedia/ads/Creatives/OasDefault/Sun_WC_5_22_GEMS_2af/webcast_5_22_8_leo.swf"+TFSMFlash_SWFCLICKVARIABLE;
+var TFSMFlash_IMAGEALTERNATE="http://www.codeguru.com/RealMedia/ads/Creatives/OasDefault/Sun_WC_5_22_GEMS_2af/webcast_5_22_8_leo.gif";
+var TFSMFlash_OASALTTEXT="Click Here";
+var TFSMFlash_OASTARGET="_blank";
+var TFSMFlash_OASPROTOCOL="http://";
+var TFSMFlash_OASDIM="WIDTH='750' HEIGHT='100'";
+var TFSMFlash_OASADID="ad_banner";
+
+document.write('<scr'+'ipt src="http://www.codeguru.com/RealMedia/ads/Creatives/OasDefault/Sun_WC_5_22_GEMS_2af/TFSMFlashWrapper201.js"></scr'+'ipt>');
+-->
+</script>
+
+<noscript>
+<a href="http://www.codeguru.com/RealMedia/ads/click_lx.ads/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/1381524127/468x60-1/OasDefault/Sun_WC_5_22_GEMS_2af/webcast_5_22_8_leo.html/64616632643839373438306461383030?" target="_blank"><img src="http://www.codeguru.com/RealMedia/ads/Creatives/OasDefault/Sun_WC_5_22_GEMS_2af/webcast_5_22_8_leo.gif" width=750 height=100 alt="Click Here" border=0></a>
+</noscript><IMG SRC="http://www.codeguru.com/RealMedia/ads/adstream_lx.cgi/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/1381524127/468x60-1/OasDefault/Sun_WC_5_22_GEMS_2af/webcast_5_22_8_leo.html/64616632643839373438306461383030?_RM_EMPTY_" WIDTH=1 HEIGHT=1><p>
+</center>
+
+<!--Top Navigation-->
+<table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr>
+
+    <td>
+<link REL="stylesheet" HREF="/icom_includes/earthweb/headers/css/headermenu.css" TYPE="text/css">
+<SCRIPT SRC="/icom_includes/earthweb/headers/scripts/headermenu.js"></SCRIPT>
+<div style="position: relative; top: 16px; left: 0px; text-align: left;">
+<div onmouseout="showMenuit(0)" onmouseover="showMenuit(1)" id="menuit" style="border: 1px solid #000000; background-color: #FFFFCC; position: absolute; left: 5px; width:475px; visibility: hidden; padding:3px; opacity: 0.95; filter:alpha(opacity=95);"> 
+<a href="http://itmanagement.earthweb.com" class="menulink"><B>IT MANAGEMENT</B></a>
+<table cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
+<td width="20%">
+<a href="http://www.cioupdate.com/" class="menulink">CIO Update</a><br>
+<a href="http://itmanagement.earthweb.com/" class="menulink">Datamation</a></td>
+<td width="20%">
+<a href="http://www.ecrmguide.com/" class="menulink">eCRMGuide</a><br>
+<a href="http://www.drmwatch.com/" class="menulink">DRM Watch</a></td>
+<td width="20%">
+<a href="http://www.esecurityplanet.com/" class="menulink">eSecurity Planet</a><br>
+<a href="http://www.itsmwatch.com/" class="menulink">ITSMWatch</a></td>
+<td width="20%">
+<a href="http://www.intranetjournal.com/" class="menulink">Intranet Journal</a><br>
+<a href="http://www.insideid.com/" class="menulink">Inside ID</a></td>
+<td width="20%">
+<a href="http://www.gridcomputingplanet.com/" class="menulink">Grid Computing Planet</a><BR>
+<a href="http://www.bitaplanet.com/" class="menulink">bITa Planet</a>
+</td>
+<td width="20%">
+<a href="http://www.itcareerplanet.com" class="menulink">IT Career Planet Planet</a>
+</td>
+</tr></table>
+</div>
+</div>
+
+<div style="position: relative; top: 16px; left: 0px; text-align: left;">
+<div onmouseout="showMenunc(0)" onmouseover="showMenunc(1)" id="menunc" style="border: 1px solid #000000; background-color: #FFFFCC; position: absolute; width:400px; left:113px; visibility: hidden; padding:3px; opacity: 0.95; filter:alpha(opacity=95);"> 
+<a href="http://networking.earthweb.com" class="menulink"><B>NETWORKING</B></a>
+<table cellspacing="0" cellpadding="0" border="0" width="100%"><tr>
+<td>
+<a href="http://www.enterprisenetworkingplanet.com/" class="menulink">EnterpriseNetworkingPlanet</a><br>
+<a href="http://www.instantmessagingplanet.com/" class="menulink">InstantMessagingPlanet</a></td>
+<td>
+<a href="http://www.enterprisestorageforum.com/" class="menulink">EnterpriseStorageForum</a><br>
+<a href="http://www.opennetworkstoday.com/" class="menulink">OpenNetworksToday</a></td>
+<td valign="top">
+<a href="http://www.opticallynetworked.com/" class="menulink">OpticallyNetworked</a><br>
+<a href="http://www.practicallynetworked.com/" class="menulink">PracticallyNetworked</a></td>
+</tr></table>
+</div>
+</div>
+
+<div style="position: relative; top: 16px; left: 0px; text-align: left;">
+<div onmouseout="showMenuweb(0)" onmouseover="showMenuweb(1)" id="menuweb" style="border: 1px solid #000000; background-color: #FFFFCC; position: absolute; width:200px; left:204px; visibility: hidden; padding:3px; opacity: 0.95; filter:alpha(opacity=95);"> 
+<a href="http://webdeveloper.earthweb.com" class="menulink"><B>WEB DEVELOPMENT</B></a>
+<table cellpadding="0"cellspacing="0"border="0" width="100%"><tr>
+<td width="50%">
+<a href="http://www.htmlgoodies.com/" class="menulink">HTML Goodies</a><br></td>
+<td width="50%" valign="top">
+<a href="http://webdeveloper.earthweb.com/webjs/" class="menulink">Javascripts.com</a><br>
+</td></tr></table>
+</div>
+</div>
+
+<div style="position: relative; top: 16px; left: 0px; text-align: left;">
+<div onmouseout="showMenuhw(0)" onmouseover="showMenuhw(1)" id="menuhw" style="border: 1px solid #000000; background-color: #FFFFCC; position: absolute; width:215px; left:324px; visibility: hidden; padding:3px; opacity: 0.95; filter:alpha(opacity=95);"> 
+<a href="http://hardware.earthweb.com" class="menulink"><B>HARDWARE & SYSTEMS</B></a>
+<table cellspacing=0 cellpadding=0 border=0 width="100%"><tr><td width="50%">
+<a href="http://earthwebhardware.com/" class="menulink">EarthWeb Hardware </a><br>
+<a href="http://www.sysopt.com" class="menulink">SysOpt</a></td>
+<td width="50%">
+<a href="http://www.virtualdr.com" class="menulink">Virtual Dr.</a><br>
+<a href="http://www.workstationplanet.com" class="menulink">WorkstationPlanet</a></td></tr></table>
+</div>
+</div>
+
+<div style="position: relative; top: 16px; left: 0px; text-align: left;">
+<div onmouseout="showMenusw(0)" onmouseover="showMenusw(1)" id="menusw" style="border: 1px solid #000000; background-color: #FFFFCC; position: absolute; width:215px; left:466px; visibility: hidden; padding:3px; opacity: 0.95; filter:alpha(opacity=95);"> 
+<a href="http://softwaredev.earthweb.com" class="menulink"><B>SOFTWARE DEVELOPMENT</B></a>
+<table cellpadding="0"cellspacing="0"border="0" width="100%"><tr>
+<td>
+<a href="http://www.codeguru.com" class="menulink">CodeGuru</a><br>
+<a href="http://www.developer.com" class="menulink">Developer</a></td>
+<td>
+<a href="http://www.jguru.com" class="menulink"> jGuru.com</a><br>
+<a href="http://www.jars.com" class="menulink"> JARS</a></td>
+<td valign="top">
+<a href="http://www.gamelan.com" class="menulink">Gamelan</a><BR></td>
+</tr></table>
+</div>
+</div>
+
+<div style="position: relative; top: 16px; left: 0px; text-align: left;">
+<div onmouseout="showMenuitnews(0)" onmouseover="showMenuitnews(1)" id="menuitnews" style="border: 1px solid #000000; background-color: #FFFFCC; position: absolute; width:460px; left:225px; visibility: hidden; padding:3px; opacity: 0.95; filter:alpha(opacity=95);"> 
+<a href="http://news.earthweb.com" class="menulink"><B>EARTHWEBNEWS.COM</B></a>
+<table cellpadding="0"cellspacing="0"border="0" width="100%"><tr>
+<td width="20%">
+<a href="http://news.earthweb.com/bus-news/" class="menulink">Business</a><br>
+<a href="http://news.earthweb.com/dev-news/" class="menulink">Developer</a></td>
+<td width="20%">
+<a href="http://news.earthweb.com/ec-news/" class="menulink">Ecommerce</a><br>
+<a href="http://news.earthweb.com/ent-news/" class="menulink">Enterprise</a></td>
+<td width="20%">
+<a href="http://news.earthweb.com/infra/" class="menulink">Networking</a><br>
+<a href="http://news.earthweb.com/security/" class="menulink">Security</a></td>
+<td width="20%">
+<a href="http://news.earthweb.com/special/" class="menulink">Special Reports</a><br>
+<a href="http://news.earthweb.com/storage/" class="menulink">Storage</a></td>
+<td width="20%">
+<a href="http://news.earthweb.com/commentary/" class="menulink">Commentary</a><br>
+<a href="http://news.earthweb.com/wireless/" class="menulink">Wireless</a></td>
+<td width="20%">
+<a href="http://news.earthweb.com/xsp/" class="menulink">xSP</a><br>
+<a href="http://news.earthweb.com/stats/" class="menulink">Stats</a></td>
+</tr></table>
+</div>
+</div>
+<table  cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td>
+<div id="cgheader" style="width: 750px;">
+    <ul>
+      <li onmouseover="showMenuit(1)" onmouseout="showMenuit(0)"><a href="http://itmanagement.earthweb.com">IT MANAGEMENT</a></li>
+      <li onmouseover="showMenunc(1)" onmouseout="showMenunc(0)"><a href="http://networking.earthweb.com">NETWORKING</a></li>
+      <li onmouseover="showMenuweb(1)" onmouseout="showMenuweb(0)"><a href="http://webdeveloper.earthweb.com">WEB DEVELOPMENT</a></li>
+      <li onmouseover="showMenuhw(1)" onmouseout="showMenuhw(0)"><a href="http://hardware.earthweb.com">HARDWARE & SYSTEMS</a></li>
+      <li onmouseover="showMenusw(1)" onmouseout="showMenusw(0)"><a href="http://softwaredev.earthweb.com">SOFTWARE DEVELOPMENT</a></li>
+	  <li onmouseover="showMenuitnews(1)" onmouseout="showMenuitnews(0)"><a href="http://news.earthweb.com">IT NEWS</a></li></ul>
+</div>
+</td></tr></table>
+</td>
+
+
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr>
+    <td background="/img/top-bg.gif">
+      <table width="780" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td width="272"><a href="/"><img src="/img/logo.gif" width="272" height="82" border="0" alt="CodeGuru" vspace="0" hspace="0"></a></td>
+          <td background="/img/top-bg-2.gif">
+
+            <table width="508" cellpadding="0" cellspacing="0" border="0" background="">
+               <tr>
+                 <td width="508" colspan="2"><img src="/img/sp.gif" width="508" height="1" border="0" alt="" vspace="0" hspace="0"></td>
+               </tr>
+               <tr><form method="post" name="myform" action="http://search.internet.com/www.codeguru.com">
+                 <td width="1"><img src="/img/sp.gif" width="1" height="54" border="0" alt="" vspace="0" hspace="0"></td>
+                 <td><a href="http://www.earthweb.com"><img src="/img/eweb.gif" width="135" height="20" border="0" align="right" alt="Earthweb"></a>
+                 <input type="hidden" name="starget" value="">
+              	 <input type="hidden" name="IC_QueryDatabase" value="">
+
+              	 <img src="/img/search.gif" width="50" height="23" border="0" align="absmiddle" alt="Search">
+              	 <select name="searchsite" style="color: #000000; font-family:  verdana, arial, sans-serif ; font-weight: normal; font-size: 9pt; background-color: #ffffff;">
+                 <option value="CodeGuru" selected>CodeGuru.com</option>
+                 <option value="CodeGuru-Articles">---Articles</option>
+                 <option value="CodeGuru-Comments">---Comments</option>
+                 <option value="CodeGuru-Forums">---Forums</option>
+                 <option value="Earthweb">Earthweb</option>
+
+                 </select>
+              <input type="text" name="IC_QueryText" size="10">
+              <input type="image" border="0" name="submit" value="Go!" src="/img/go.gif" width="40" height="23" alt="Go" align="absmiddle">
+                 </td>
+               </tr></form>
+               <tr>
+                 <td width="1"><img src="/img/sp.gif" width="1" height="27" border="0" alt="" vspace="0" hspace="0"></td>
+                 <td align="center"> 
+                 <IMG SRC="/img/eweb-nav.gif" WIDTH=330 HEIGHT=14 BORDER=0 USEMAP="#eweb_nav_Map" vspace="0" hspace="0">
+
+					<MAP NAME="eweb_nav_Map">
+					<AREA SHAPE="rect" ALT="Forums" COORDS="253,0,330,14" HREF="http://www.codeguru.com/forum">
+					<AREA SHAPE="rect" ALT="Wireless" COORDS="185,0,244,14" HREF="http://www.developer.com/ws/">
+					<AREA SHAPE="rect" ALT="Jars" COORDS="145,0,176,14" HREF="http://www.jars.com">
+					<AREA SHAPE="rect" ALT="Gamelan" COORDS="77,0,136,14" HREF="http://www.developer.com/java/">
+					<AREA SHAPE="rect" ALT="Developer.com" COORDS="0,0,69,14" HREF="http://www.developer.com">
+					</MAP>
+                </td>
+              </tr>
+
+            </table>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+
+<!--End Top-->
+<table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr>
+    <td width="1%" background="/img/leftnav-bg.gif" valign="top">
+    <!--Left Navigation-->
+   <!--Left Navigation-->
+
+
+<table width="165" bgcolor="#999999" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td>
+          <a href="http://www.codeguru.com"><img src="/img/leftnav-top.gif" width="165" height="30" border="0" alt="CodeGuru Navigation"></a></td>
+
+        </tr>
+
+        <tr>
+          <td>
+          	
+
+<div class="menu">
+
+<ul>
+<li><a href="/Cpp" class="hide"><B>Visual C++ / C++</B></a>
+
+<!--[if lte IE 6]>
+<a href="/Cpp"><B>Visual C++ / C++</B>
+<table><tr><td>
+<![endif]-->
+
+<ul>
+
+<li><a class="hide" href="/cpp/cpp">C++ <B>&raquo;</B></a>
+
+<!--[if lte IE 6]>
+<a class="sub" href="/cpp/cpp">C++ <B>&raquo;</B>
+<table><tr><td>
+<![endif]-->
+<ul>
+<li><a href="/cpp/cpp/algorithms">Algorithms & Formulas</a></li>
+<li><a href="/cpp/cpp/cpp_mfc">C++ & MFC</a></li>
+<li><a href="/cpp/cpp/date_time">Date & Time</a></li>
+<li><a href="/cpp/cpp/cpp_managed">Managed C++</a></li>
+<li><a href="/cpp/cpp/string">String Programming</a></li>
+
+</ul>
+
+<!--[if lte IE 6]>
+</td></tr></table>
+</a>
+<![endif]-->
+</li>
+<li><a class="hide" href="/cpp/com-tech">COM-based Technologies <B>&raquo;</B></a>
+<!--[if lte IE 6]>
+<a class="sub" href="/cpp/com-tech">COM-based Technologies <B>&raquo;</B>
+<table><tr><td>
+<![endif]-->
+<ul>
+<li><a href="/cpp/com-tech/atl">ATL & WTL Programming</a></li>
+<li><a href="/cpp/com-tech/activex">ActiveX Programming</a></li>
+<li><a href="/cpp/com-tech/complus">COM+</a></li>
+<li><a href="/cpp/com-tech/shell">Shell Programming</a></li>
+</ul>
+
+<!--[if lte IE 6]>
+</td></tr></table>
+</a>
+<![endif]-->
+</li>
+<li><a class="hide" href="/cpp/controls">Controls <B>&raquo;</B></a>
+<!--[if lte IE 6]>
+<a class="sub" href="/cpp/controls">Controls <B>&raquo;</B>
+<table><tr><td>
+<![endif]-->
+<ul>
+<li><a href="/cpp/controls/buttonctrl">Button Control</a></li>
+				<li><a href="/cpp/controls/combobox">ComboBox</a></li>
+				<li><a href="/cpp/controls/editctrl">Edit Control</a></li>
+				<li><a href="/cpp/controls/imagelist">ImageList Control</a></li>
+
+				<li><a href="/cpp/controls/listbox">ListBox Control</a></li>
+				<li><a href="/cpp/controls/listview">ListView Control</a></li>
+				<li><a href="/cpp/controls/menu">Menu</a></li>
+				<li><a href="/cpp/controls/controls">Other Controls</a></li>
+				<li><a href="/cpp/controls/propertysheet">Property Sheet</a></li>
+				<li><a href="/cpp/controls/richedit">Rich Edit Control</a></li>
+
+				<li><a href="/cpp/controls/staticctrl">Static Control</a></li>
+				<li><a href="/cpp/controls/statusbar">Status Bar</a></li>
+				<li><a href="/cpp/controls/toolbar">Toolbar</a></li>
+				<li><a href="/cpp/controls/treeview">Treeview Control</a></li>
+</ul>
+<!--[if lte IE 6]>
+</td></tr></table>
+</a>
+<![endif]-->
+</li>
+<li><a class="hide" href="/cpp/data">Data <B>&raquo;</B></a>
+
+<!--[if lte IE 6]>
+<a class="sub" href="/cpp/data">Data <B>&raquo;</B>
+<table><tr><td>
+<![endif]-->
+<ul>
+<li><a href="/cpp/data/mfc_database">Database</a></li>
+				<li><a href="/cpp/data/data-misc">Miscellaneous</a></li>
+</ul>
+<!--[if lte IE 6]>
+</td></tr></table>
+</a>
+<![endif]-->
+</li>
+<li><a class="hide" href="/cpp/frameworks">Frameworks <B>&raquo;</B></a>
+<!--[if lte IE 6]>
+<a class="sub" href="/cpp/frameworks">Frameworks <B>&raquo;</B>
+<table><tr><td>
+<![endif]-->
+<ul>
+<li><a href="/cpp/frameworks/advancedui">UI & Printing Frameworks</a></li>
+
+</ul>
+<!--[if lte IE 6]>
+</td></tr></table>
+</a>
+<![endif]-->
+</li>
+<li><a class="hide" href="/cpp/g-m">Graphics & Multimedia <B>&raquo;</B></a>
+<!--[if lte IE 6]>
+<a class="sub" href="/cpp/g-m">Graphics & Multimedia <B>&raquo;</B>
+<table><tr><td>
+<![endif]-->
+<ul>
+<li><a href="/cpp/g-m/bitmap">Bitmaps & Palettes</a></li>
+				<li><a href="/cpp/g-m/directx">DirectX</a></li>
+				<li><a href="/cpp/g-m/gdi">GDI</a></li>
+
+				<li><a href="/cpp/g-m/multimedia">Multimedia</a></li>
+				<li><a href="/cpp/g-m/opengl">OpenGL</a></li>
+</ul>
+<!--[if lte IE 6]>
+</td></tr></table>
+</a>
+<![endif]-->
+</li>
+<li><a class="hide" href="/cpp/i-n">Internet & Networking <B>&raquo;</B></a>
+<!--[if lte IE 6]>
+<a class="sub" href="/cpp/i-n">Internet & Networking <B>&raquo;</B>
+<table><tr><td>
+<![endif]-->
+<ul>
+<li><a href="/cpp/i-n/ieprogram">IE Programming</a></li>
+
+				<li><a href="/cpp/i-n/isapi">ISAPI</a></li>
+
+				<li><a href="/cpp/i-n/internet">Internet Protocols</a></li>
+				<li><a href="/cpp/i-n/network">Network Protocols</a></li>
+</ul>
+<!--[if lte IE 6]>
+</td></tr></table>
+</a>
+<![endif]-->
+</li>
+<li><a class="hide" href="/cpp/misc">Miscellaneous <B>&raquo;</B></a>
+<!--[if lte IE 6]>
+<a class="sub" href="/cpp/misc">Miscellaneous <B>&raquo;</B>
+<table><tr><td>
+<![endif]-->
+<ul>
+
+<li><a href="/cpp/misc/misc">Miscellaneous</a></li>
+				<li><a href="/cpp/misc/samples">Samples</a></li>
+
+</ul>
+<!--[if lte IE 6]>
+</td></tr></table>
+</a>
+<![endif]-->
+</li>
+
+<li><a class="hide2" href="/cpp/security">Security</a>
+<!--[if lte IE 6]>
+<a class="sub2" href="/cpp/security">Security
+<table><tr><td>
+<![endif]-->
+
+<!--[if lte IE 6]>
+</td></tr></table>
+</a>
+<![endif]-->
+</li>
+
+<li><a class="hide2" href="/Cpp/STL">Standard Template Library</a>
+<!--[if lte IE 6]>
+<a class="sub2" href="/Cpp/STL">Standard Template Library
+<table><tr><td>
+<![endif]-->
+
+<!--[if lte IE 6]>
+</td></tr></table>
+</a>
+<![endif]-->
+</li>
+
+<li><a class="hide" href="/cpp/v-s">Visual Studio <B>&raquo;</B></a>
+
+<!--[if lte IE 6]>
+<a class="sub" href="/cpp/v-s">Visual Studio <B>&raquo;</B>
+<table><tr><td>
+<![endif]-->
+<ul>
+<li><a href="/cpp/v-s/devstudio_macros">Add-ins & Macros</a></li>
+
+				<li><a href="/cpp/v-s/debug">Debugging</a></li>
+				<li><a href="/cpp/v-s/tips">Editor Tips</a></li>
+</ul>
+<!--[if lte IE 6]>
+</td></tr></table>
+</a>
+<![endif]-->
+</li>
+<li><a class="hide" href="/cpp/w-d">Windows & Dialogs <B>&raquo;</B></a>
+
+<!--[if lte IE 6]>
+<a class="sub" href="/cpp/w-d">Windows & Dialogs <B>&raquo;</B>
+<table><tr><td>
+<![endif]-->
+<ul>
+<li><a href="/cpp/w-d/console">Console</a></li>
+				<li><a href="/cpp/w-d/dislog">Dialog</a></li>
+
+				<li><a href="/cpp/w-d/doc_view">Doc/View</a></li>
+				<li><a href="/cpp/w-d/docking">Docking Window</a></li>
+				<li><a href="/cpp/w-d/splitter">Splitter</a></li>
+
+</ul>
+<!--[if lte IE 6]>
+</td></tr></table>
+</a>
+<![endif]-->
+</li>
+<li><a class="hide" href="/cpp/w-p">Windows Programming <B>&raquo;</B></a>
+<!--[if lte IE 6]>
+<a class="sub" href="/cpp/w-p">Windows Programming <B>&raquo;</B>
+<table><tr><td>
+<![endif]-->
+<ul>
+<li><a href="/cpp/w-p/ce">CE</a></li>
+
+				<li><a href="/cpp/w-p/clipboard">Clipboard</a></li>
+				<li><a href="/cpp/w-p/dll">DLL</a></li>
+				<li><a href="/cpp/w-p/files">File & Folder</a></li>
+
+				<li><a href="/cpp/w-p/help">Help Systems</a></li>
+				<li><a href="/cpp/w-p/printing">Printing</a></li>
+				<li><a href="/cpp/w-p/system">System</a></li>
+
+				<li><a href="/cpp/w-p/vista">Vista</a></li>
+
+				<li><a href="/cpp/w-p/win32">Win32</a></li>
+</ul>
+<!--[if lte IE 6]>
+</td></tr></table>
+</a>
+<![endif]-->
+</li>
+<li><a class="hide2" href="/cpp/sample_chapter">Sample Chapter</a>
+
+<!--[if lte IE 6]>
+<a class="sub2" href="/cpp/sample_chapter">Sample Chapter
+<table><tr><td>
+<![endif]-->
+
+<!--[if lte IE 6]>
+</td></tr></table>
+</a>
+<![endif]-->
+</li>
+
+
+</ul>
+
+<!--[if lte IE 6]>
+</td></tr></table>
+</a>
+<![endif]-->
+
+</li>
+
+</ul>
+
+
+<ul>
+<li><a class="hide" href="/Csharp"><B>.NET / C#</B></a>
+
+<!--[if lte IE 6]>
+<a href="/Csharp"><B>.NET / C#</B>
+<table><tr><td>
+<![endif]-->
+
+<ul>
+
+<li><a class="hide" href="/csharp/.net">.NET <B>&raquo;</B></a>
+<!--[if lte IE 6]>
+<a class="sub" href="/csharp/.net">.NET <B>&raquo;</B>
+<table><tr><td>
+<![endif]-->
+
+<ul>
+<li><a href="/csharp/.net/net_data">Data & Databases</a></li>
+				<li><a href="/csharp/.net/net_debugging">Debugging</a></li>
+				<li><a href="/csharp/.net/net_framework">Framework</a></li>
+
+				<li><a href="/csharp/.net/net_general">General</a></li>
+				<li><a href="/csharp/.net/net_asp">General ASP.NET</a></li>
+				<li><a href="/csharp/.net/jscript">JScript .NET</a></li>
+
+				<li><a href="/csharp/.net/cpp_managed">Managed C++</a></li>
+				<li><a href="/csharp/.net/net_security">Net Security</a></li>
+				<li><a href="/csharp/.net/net_vs_addins">VS Add-Ins</a></li>
+<li><a href="/csharp/.net/net_silverlight">Silverlight</a></li>
+<li><a href="/csharp/.net/net_wcf">WCF</a></li>
+<li><a href="/csharp/.net/net_wpf">WPF</a></li>
+<li><a href="/csharp/.net/net_workflow">Windows Workflow</a></li>
+
+</ul>
+<!--[if lte IE 6]>
+</td></tr></table>
+</a>
+<![endif]-->
+</li>
+<li><a class="hide" href="/csharp/csharp">C# <B>&raquo;</B></a>
+<!--[if lte IE 6]>
+<a class="sub" href="/csharp/csharp">C# <B>&raquo;</B>
+<table><tr><td>
+<![endif]-->
+<ul>
+<li><a href="/csharp/csharp/cs_syntax">Basic Syntax</a></li>
+
+				<li><a href="/csharp/csharp/cs_collections">Collections</a></li>
+				<li><a href="/csharp/csharp/cs_controls">Controls</a></li>
+				<li><a href="/csharp/csharp/cs_data">Data & I/O</a></li>
+
+				<li><a href="/csharp/csharp/cs_date_time">Date & Time</a></li>
+				<li><a href="/csharp/csharp/cs_delegates">Delegates</a></li>
+
+				<li><a href="/csharp/csharp/cs_graphics">Graphics & Multimedia</a></li>
+				<li><a href="/csharp/csharp/cs_internet">Internet</a></li>
+				<li><a href="/csharp/csharp/cs_misc">Miscellaneous</a></li>
+
+				<li><a href="/csharp/csharp/net30">.NET 3.0 / .NET 3.5</a></li>
+				<li><a href="/csharp/csharp/cs_network">Network & Systems</a></li>
+				<li><a href="/csharp/csharp/cs_webservices">Web Services</a></li>
+<li><a href="/csharp/csharp/cs_linq">LINQ</a></li>
+
+</ul>
+<!--[if lte IE 6]>
+</td></tr></table>
+</a>
+<![endif]-->
+</li>
+
+<li><a class="hide2" href="/csharp/sample_chapter">Sample Chapter</a>
+<!--[if lte IE 6]>
+<a class="sub2" href="/csharp/sample_chapter">Sample Chapter
+<table><tr><td>
+<![endif]-->
+<!--[if lte IE 6]>
+</td></tr></table>
+</a>
+<![endif]-->
+</li>
+
+</ul>
+
+<!--[if lte IE 6]>
+</td></tr></table>
+</a>
+<![endif]-->
+
+</li>
+
+</ul>
+
+
+
+<ul>
+<li><a class="hide" href="/vb"><B>Visual Basic</B></a>
+
+<!--[if lte IE 6]>
+<a href="/vb"><B>Visual Basic</B>
+<table><tr><td>
+<![endif]-->
+
+<ul>
+
+<li><a class="hide" href="/vb/gen" >General <B>&raquo;</B></a>
+<!--[if lte IE 6]>
+<a class="sub" href="/vb/gen" >General <B>&raquo;</B>
+<table><tr><td>
+<![endif]-->
+<ul>
+<li><a href="/vb/gen/vb_database">Database</a></li>			
+
+<li><a href="/vb/gen/vb_forms">Forms & Controls</a></li>			
+<li><a href="/vb/gen/vb_general">IDE & Language</a></li>			
+<li><a href="/vb/gen/vb_misc">Misc</a></li>			
+<li><a href="/vb/gen/vb_system">System</a></li>			
+
+<li><a href="/vb/gen/vb_graphics">VB Graphics</a></li>			
+<li><a href="/vb/gen/vb_multimedia">VB Multimedia</a></li>
+</ul>
+<!--[if lte IE 6]>
+</td></tr></table>
+</a>
+<![endif]-->
+</li>
+
+<li><a class="hide" href="/vb/vb_internet" >Internet <B>&raquo;</B></a>
+<!--[if lte IE 6]>
+<a class="sub" href="/vb/vb_internet" >Internet <B>&raquo;</B>
+<table><tr><td>
+<![endif]-->
+<ul>
+<li><a href="/vb/vb_internet/aspnet">ASP .NET</a></li>			
+<li><a href="/vb/vb_internet/database">Database</a></li>			
+<li><a href="/vb/vb_internet/html">HTML</a></li>			
+
+<li><a href="/vb/vb_internet/indexing">Indexing</a></li>			
+<li><a href="/vb/vb_internet/smtpemail">SMTP / eMail</a></li>			
+<li><a href="/vb/vb_internet/webservices">Web Services</a></li>
+</ul>
+
+<!--[if lte IE 6]>
+</td></tr></table>
+</a>
+<![endif]-->
+</li>
+<li><a class="hide" href="/vb/mobile" >Mobile/Wireless <B>&raquo;</B></a>
+<!--[if lte IE 6]>
+<a class="sub" href="/vb/mobile" >Mobile/Wireless <B>&raquo;</B>
+<table><tr><td>
+<![endif]-->
+<ul>
+<li><a href="/vb/mobile/mobileinternettoolkit">Mobile Internet<br/>Toolkit</a></li>		
+
+<li><a href="/vb/mobile/pocketpc">Pocket PC</a></li>
+</ul>
+<!--[if lte IE 6]>
+</td></tr></table>
+</a>
+<![endif]-->
+</li>
+
+<li><a class="hide2" href="/vb/vbnet30">.NET 3.0</a>
+<li><a class="hide2" href="/vb/vb_linq">LINQ</a>
+<!--[if lte IE 6]>
+<a class="sub2" href="/vb/vbnet30">.NET 3.0
+<table><tr><td>
+<![endif]-->
+<!--[if lte IE 6]>
+</td></tr></table>
+</a>
+<![endif]-->
+</li>
+
+
+<li><a class="hide" href="/vb/controls" >VB Controls <B>&raquo;</B></a>
+<!--[if lte IE 6]>
+<a class="sub" href="/vb/controls" >VB Controls <B>&raquo;</B>
+<table><tr><td>
+<![endif]-->
+
+<ul>
+<li><a href="/vb/controls/vbnet_controls">.NET Controls</a></li>			
+<li><a href="/vb/controls/vb_activex">VB ActiveX</a></li>			
+<li><a href="/vb/controls/vb_combobox">VB ComboBox</a></li>			
+<li><a href="/vb/controls/vb_file">VB Files</a></li>			
+
+<li><a href="/vb/controls/vb_listbox">VB ListBox</a></li>			
+<li><a href="/vb/controls/vb_listview">VB ListView</a></li>			
+<li><a href="/vb/controls/vb_othctrl">VB Other Controls</a></li>			
+<li><a href="/vb/controls/vb_shell">VB Shell</a></li>
+</ul>
+<!--[if lte IE 6]>
+</td></tr></table>
+</a>
+<![endif]-->
+</li>
+
+
+<li><a class="hide2" href="/vb/sample_chapter">Sample Chapter</a>
+<!--[if lte IE 6]>
+<a class="sub2" href="/vb/sample_chapter">Sample Chapter
+<table><tr><td>
+<![endif]-->
+<!--[if lte IE 6]>
+</td></tr></table>
+</a>
+<![endif]-->
+</li>
+
+
+</ul>
+
+<!--[if lte IE 6]>
+</td></tr></table>
+</a>
+<![endif]-->
+
+</li>
+
+</ul>
+
+</div>
+
+<div class="menu2">
+
+<ul>
+		<li><a href="/video"><B>Videos</B></a></li>
+
+	</ul>
+		<ul>
+		<li><a href="/edit-article.php"><B>Submit an Article</B></a></li>
+
+	</ul>
+		<ul>
+		<li><a href="/forum"><B>Discussion Forums</B></a></li>
+
+	</ul>
+
+		<ul>
+		<li><a href="/resources"><B>Resource Directory</B></a></li>
+	</ul>
+
+		<ul>
+		<li><a href="/announcements"><B>Announcements</B></a></li>
+	</ul>
+		<ul>
+
+		<li><a href="http://extra.codeguru.com/bookList/booklist.asp"><B>Book List</B></a></li>
+	</ul>
+		<ul>
+
+		<li><a href="http://extra.codeguru.com/default.asp"><B>Book Reviews</B></a></li>
+	</ul>
+		<ul>
+		<li><a href="/gurus.php"><B>List of Gurus</B></a></li>
+
+	</ul>
+		<ul>
+		<li><a href="http://www.theguestbook.com/read.php/608196"><B>Guest Book</B></a></li>
+
+	</ul>
+		<ul>
+		<li><a href="http://www.justtechjobs.com/Jobseekers.asp"><B>Technology Jobs</B></a></li>
+
+	</ul>
+		<ul>
+		<li><a href="/about.php"><B>About Us</B></a></li>
+	</ul>
+
+		<ul>
+
+		<li><a href="/faq.php"><B>FAQs</B></a></li>
+	</ul>
+
+		<ul>
+		<li><a href="/sitemap.php"><B>Site Map</B></a></li>
+	</ul>
+
+</div>
+
+ </td>
+</tr>
+</table><table width="165" cellpadding="3" cellspacing="0" border="0" bgcolor="#053061">
+  <tr><form action="/login.php" method="post">
+  <input type="hidden" name="action" value="login">
+  <input type="hidden" name="url" value="/cpp/w-p/system/threading/article.php/c7073/">
+    <td colspan="2" align="center">
+            	  <img src="/img/member-top.gif" width="113" height="13" border="0" vspace="5" alt="Member Sign In">
+          		</td>
+        	  </tr>
+        	  <tr>
+          		<td align="right"><span class="bodycopy"><font color="#FFFFFF">User ID:</font></span></td>
+          		<td><input type="text" size="7" style="width: 60px" name="username"></td>
+        	  </tr>
+        	  <tr>
+          		<td align="right"><span class="bodycopy"><font color="#FFFFFF">Password:</font></span></td>
+          		<td><input type="password" size="7" style="width: 60px" name="password"></td>
+        	  </tr>
+                  <tr>
+          		<td align="center" colspan="2"><span class="bodycopy"><font color="#FFFFFF">Remember Me:</font></span> <input type="checkbox" name="perm" value="1"></td>
+        	  </tr>
+
+        	  <tr>
+          		<td colspan="2" align="center"><input type="image" border="0" name="member" src="/img/signin-blue.gif" width="73" height="23" align="absmiddle"></td>
+        	  </tr></form>
+						<tr>
+        	    <td colspan="2" align="center"><a href="/forgotpw.php" class="moreinfo">Forgot Password?</a></td>
+        	  </tr>
+        	  <tr>
+        	    <td colspan="2" align="center"><a href="/register.php" class="moreinfo">Not a member?<br>Click here for more information and to register.</a></td>
+        	  </tr>
+        	</table>
+
+<!-- start marketplace ads -->
+<style type="text/css">
+/*
+-----------------------------------------------
+Partner Styles
+----------------------------------------------- */
+#skypartnerset {
+  width: 160px; 
+  clear: both;
+  color: #333;
+  font-size: 10px;
+  background-color: #fff;
+  border: 1px solid #333;
+  margin-bottom: 10px;
+   font-family: arial, verdana, helvetica;
+ }
+
+#skypartnerset a, #skypartnerset a:link, #skypartnerset a:visited {
+  width: 160px; 
+  clear: both;
+  color: #333;
+  font-size: 10px;
+  margin-top: 10px;
+  }
+
+#skypartnerset a:hover {
+  text-decoration: none;
+  }
+
+#skypartnerset p {
+  padding-bottom: 2px;
+  border-bottom: 1px solid #ccc;
+  }
+ </style>
+<div align="center" id="skypartnerset">
+<a href="http://www.jupitermedia.com/partners/"><img border="0" alt="" src="/img/codeguru_partners.gif"/></a>
+    <p><a href="http://www.jupitermedia.com/partners/"><strong><big>Become a Marketplace Partner</big></strong></a></p>
+<CENTER><a href="http://www.codeguru.com/RealMedia/ads/click_lx.cgi/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/2140512833/marketplace01/OasDefault/Nokia_FN_MarApr08_1b/nokiafncodeguru.html/64616632643839373438306461383030" target="new"><IMG SRC="http://view.atdmt.com/L1G/view/jptrmnok0020000013l1g/direct/01/
+" width="150" height="30" border="0"><BR>
+<FONT FACE="Verdana, Helvetica, sans-serif" SIZE="1">Build mobile apps, win &euro;15,000 & a trip to Spain</FONT></a>
+<IMG SRC="http://www.codeguru.com/RealMedia/ads/adstream_lx.cgi/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/2140512833/marketplace01/OasDefault/Nokia_FN_MarApr08_1b/nokiafncodeguru.html/64616632643839373438306461383030?_RM_EMPTY_" WIDTH=1 HEIGHT=1></CENTER>
+<br><A HREF="http://www.codeguru.com/RealMedia/ads/click_lx.cgi/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/785147654/marketplace02/OasDefault/default/empty.gif/64616632643839373438306461383030" target="_top"><IMG SRC="http://www.codeguru.com/RealMedia/ads/Creatives/OasDefault/default/empty.gif"  WIDTH=2 HEIGHT=2 ALT="" BORDER=0 BORDER="0"></A><img src="http://www.codeguru.com/RealMedia/ads/adstream_lx.cgi/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/785147654/marketplace02/OasDefault/default/empty.gif/64616632643839373438306461383030?_RM_EMPTY_" Width="1" Height="1" Border="0"><A HREF="http://www.codeguru.com/RealMedia/ads/click_lx.cgi/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/1295334876/marketplace03/OasDefault/default/empty.gif/64616632643839373438306461383030" target="_top"><IMG SRC="http://www.codeguru.com/RealMedia/ads/Creatives/OasDefault/default/empty.gif"  WIDTH=2 HEIGHT=2 ALT="" BORDER=0 BORDER="0"></A><img src="http://www.codeguru.com/RealMedia/ads/adstream_lx.cgi/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/1295334876/marketplace03/OasDefault/default/empty.gif/64616632643839373438306461383030?_RM_EMPTY_" Width="1" Height="1" Border="0"><A HREF="http://www.codeguru.com/RealMedia/ads/click_lx.cgi/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/1400352272/marketplace04/OasDefault/default/empty.gif/64616632643839373438306461383030" target="_top"><IMG SRC="http://www.codeguru.com/RealMedia/ads/Creatives/OasDefault/default/empty.gif"  WIDTH=2 HEIGHT=2 ALT="" BORDER=0 BORDER="0"></A><img src="http://www.codeguru.com/RealMedia/ads/adstream_lx.cgi/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/1400352272/marketplace04/OasDefault/default/empty.gif/64616632643839373438306461383030?_RM_EMPTY_" Width="1" Height="1" Border="0"><A HREF="http://www.codeguru.com/RealMedia/ads/click_lx.cgi/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/257049112/marketplace05/OasDefault/default/empty.gif/64616632643839373438306461383030" target="_top"><IMG SRC="http://www.codeguru.com/RealMedia/ads/Creatives/OasDefault/default/empty.gif"  WIDTH=2 HEIGHT=2 ALT="" BORDER=0 BORDER="0"></A><img src="http://www.codeguru.com/RealMedia/ads/adstream_lx.cgi/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/257049112/marketplace05/OasDefault/default/empty.gif/64616632643839373438306461383030?_RM_EMPTY_" Width="1" Height="1" Border="0"><A HREF="http://www.codeguru.com/RealMedia/ads/click_lx.cgi/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/408528560/marketplace06/OasDefault/default/empty.gif/64616632643839373438306461383030" target="_top"><IMG SRC="http://www.codeguru.com/RealMedia/ads/Creatives/OasDefault/default/empty.gif"  WIDTH=2 HEIGHT=2 ALT="" BORDER=0 BORDER="0"></A><img src="http://www.codeguru.com/RealMedia/ads/adstream_lx.cgi/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/408528560/marketplace06/OasDefault/default/empty.gif/64616632643839373438306461383030?_RM_EMPTY_" Width="1" Height="1" Border="0"></div>
+<!-- end marketplace ads -->
+<table width="165" bgcolor="#999999" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td bgcolor="#000000"><img src="/img/sp.gif" width="1" height="1" border="0" alt=""></td>
+        </tr>
+        <tr>
+          <td bgcolor="#999999"><img src="/img/sp.gif" width="1" height="1" border="0" alt=""></td>
+        </tr>
+
+      </table>
+      <img src="/img/sp.gif" width="151" height="10" border="0" alt="">
+      <table width="165" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td align="center">
+          <table width=125 height=125 border="0" cellspacing="0" cellpadding="0" bgcolor="#190C80">
+<tr>
+<td valign=top>
+<table border="0" cellspacing="0" cellpadding="1" bgcolor="#190C80" width=100%>
+<tr><form name="search" method="get" action="http://www.business.com/internet/search.asp" target="_top">	
+<td colspan=2 align=center><a href="http://www.business.com" target=_top><img src="http://www.jupitermedia.com/partners/tiles/bdclogo125.gif" border=0></a></td>
+</tr>
+<tr><td colspan=2 align=center><font face=arial style="font-size:5px;">&nbsp;</font></td></tr>
+<tr><td colspan=2 align=center><font face=arial size=2 color=#ffffff><b>Search</b></font></td></tr>
+<tr><td colspan=2 align=center><font face=arial style="font-size:5px;">&nbsp;</font></td></tr>
+<tr>
+<td colspan=2 align=center><input type=text name=query size=15 style="font-size:10px;"><br><br>
+<input type="submit" name="search" value="Search" border="0" style="font-size:10px;" style="background:ffffff;"></td>
+</tr>
+</form>
+
+</table>
+</td>
+</tr>
+</table><IMG SRC="http://www.codeguru.com/RealMedia/ads/adstream_lx.cgi/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/213529943/125x125-1/OasDefault/Business.com_73w/125search.html/64616632643839373438306461383030?_RM_EMPTY_" WIDTH=1 HEIGHT=1>          <p>
+          <a href="http://www.jobs.internet.com"><img src="/img/jobs.gif" width="120" height="35" alt="jobs.internet.com" border="0"></a>
+          <p>
+
+            <table width="100%" cellpadding="3" cellspacing="0" border="0" background="">
+              <tr>
+                <td bgcolor="#000000" align="center" class="bodycopy"><font color="#FFFFFF"><b>internet.commerce</b></font></td>
+              </tr>
+              <tr>
+                <td bgcolor="#CCCCCC" class="bodycopy" align="left"><a href="http://www.internet.com/partners/">Partners &amp; Affiliates</A><BR>
+<a href="http://www.trellian.com" target=new>Promote Your Website</a>
+<IMG SRC="http://www.codeguru.com/RealMedia/ads/adstream_lx.cgi/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/1686839871/cp1/OasDefault/Trellian_79c/PromoteYourWebsite.html/64616632643839373438306461383030?_RM_EMPTY_" WIDTH=1 HEIGHT=1><br><a href="http://www.internetshopper.com/" target=new>Online Shopping</a>
+<IMG SRC="http://www.codeguru.com/RealMedia/ads/adstream_lx.cgi/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/29983456/cp2/OasDefault/Internet_Shopper_CP_6b/OnlineShopping.html/64616632643839373438306461383030?_RM_EMPTY_" WIDTH=1 HEIGHT=1><br><a href="http://www.orlandofuntickets.com" target=new>Disney World Tickets</a>
+<IMG SRC="http://www.codeguru.com/RealMedia/ads/adstream_lx.cgi/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/1916115391/cp3/OasDefault/OrlandoFunTickets_CP_1d/DisneyWorldTickets.html/64616632643839373438306461383030?_RM_EMPTY_" WIDTH=1 HEIGHT=1><br><a href="http://www.getafreelancer.com">Web Design</a>
+<IMG SRC="http://www.codeguru.com/RealMedia/ads/adstream_lx.cgi/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/1301606057/cp4/OasDefault/Innovate_IT_43c/WebDesign.html/64616632643839373438306461383030?_RM_EMPTY_" WIDTH=1 HEIGHT=1 BORDER=0><br><a href="http://www.usimprints.com/cat/promotional-golf-products-245.htm" target=new>Imprinted Gifts</a>
+<IMG SRC="http://www.codeguru.com/RealMedia/ads/adstream_lx.cgi/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/1190838593/cp5/OasDefault/US_Imprints_CP_10f/ImprintedGifts.html/64616632643839373438306461383030?_RM_EMPTY_" WIDTH=1 HEIGHT=1><br><a href="http://shop.internet.com/">Compare Prices</a>
+<IMG SRC="http://www.codeguru.com/RealMedia/ads/adstream_lx.cgi/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/1262470801/cp6/OasDefault/DealTime_73e/ComparePrices.html/64616632643839373438306461383030?_RM_EMPTY_" WIDTH=1 HEIGHT=1><br><a href="http://shop.internet.com/" target=new>Shop</a>
+<IMG SRC="http://www.codeguru.com/RealMedia/ads/adstream_lx.cgi/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/300528330/cp7/OasDefault/DealTime_73o/Shop.html/64616632643839373438306461383030?_RM_EMPTY_" WIDTH=1 HEIGHT=1><br><a href="http://www.contractorsnow.net" target=new>Home Improvement</a>
+<IMG SRC="http://www.codeguru.com/RealMedia/ads/adstream_lx.cgi/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/827667424/cp8/OasDefault/Experience_Adv_Contractor_CP_9a/HomeImprovement.html/64616632643839373438306461383030?_RM_EMPTY_" WIDTH=1 HEIGHT=1><br><a href="http://www.epromos.com">Promotional Gifts</a>
+<IMG SRC="http://www.codeguru.com/RealMedia/ads/adstream_lx.cgi/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/1740396779/cp9/OasDefault/EPROMOS_50a/PromotionalGifts.html/64616632643839373438306461383030?_RM_EMPTY_" WIDTH=1 HEIGHT=1 BORDER=0><br><a href="http://www.branders.com" target=new>Promotional Products</a>
+<IMG SRC="http://www.codeguru.com/RealMedia/ads/adstream_lx.cgi/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/894420843/cp10/OasDefault/Branders_43d/PromotionalProducts.html/64616632643839373438306461383030?_RM_EMPTY_" WIDTH=1 HEIGHT=1><br><a href="http://www.gimmees.com">Imprinted Promotions</a>
+<IMG SRC="http://www.codeguru.com/RealMedia/ads/adstream_lx.cgi/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/1733659761/cp11/OasDefault/Gimmees.com_CP_15a/ImprintedPromotions.html/64616632643839373438306461383030?_RM_EMPTY_" WIDTH=1 HEIGHT=1 BORDER=0><br><a href="http://www.condocompany.com/">Condos For Sale</a>
+<IMG SRC="http://www.codeguru.com/RealMedia/ads/adstream_lx.cgi/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/423854581/cp12/OasDefault/CondoCompany_CP_21a/CondosForSale.html/64616632643839373438306461383030?_RM_EMPTY_" WIDTH=1 HEIGHT=1 BORDER=0><br><a href="http://www.callingcardplus.com/">Calling Cards</a>
+<IMG SRC="http://www.codeguru.com/RealMedia/ads/adstream_lx.cgi/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/1072281911/cp13/OasDefault/CallingCardPlus_CP_18a/CallingCards.html/64616632643839373438306461383030?_RM_EMPTY_" WIDTH=1 HEIGHT=1 BORDER=0><br><a href="http://www.memoryx.net/">Memory</a>
+<IMG SRC="http://www.codeguru.com/RealMedia/ads/adstream_lx.cgi/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/494013312/cp14/OasDefault/Memoryx_net_45a/Memory.html/64616632643839373438306461383030?_RM_EMPTY_" WIDTH=1 HEIGHT=1 BORDER=0><br>
+</td>
+              </tr>
+            </table>                
+          </td>
+        </tr>
+      </table>     
+<br>
+<br>
+<table width="165" cellpadding="4" bgcolor="#053061">
+<tr>
+<td>
+<font color="#CCCC66"><b>RSS Feeds</b></font><p>
+
+<a href="/icom_includes/feeds/codeguru/rss-all.xml"><img src="/img/xml.gif" width="36" height="14" border="0" align="absmiddle" hspace="5" ALT="RSS"><font color="#ffffff">All</font></a>
+<br><img src="/img/sp.gif" width="1" height="2" border="0" alt=""><br>
+<a href="/icom_includes/feeds/codeguru/rss-cpp.xml"><img src="/img/xml.gif" width="36" height="14" border="0" align="absmiddle" hspace="5" ALT="RSS"><font color="#ffffff">VC++/C++</font></a>
+<br><img src="/img/sp.gif" width="1" height="2" border="0" alt=""><br>
+<a href="/icom_includes/feeds/codeguru/rss-csharp.xml"><img src="/img/xml.gif" width="36" height="14" border="0" align="absmiddle" hspace="5" ALT="RSS"><font color="#ffffff">.NET/C#</font></a>
+<br><img src="/img/sp.gif" width="1" height="2" border="0" alt=""><br>
+<a href="/icom_includes/feeds/codeguru/rss-vb.xml"><img src="/img/xml.gif" width="36" height="14" border="0" align="absmiddle" hspace="5" ALT="RSS"><font color="#ffffff">VB</font></a>
+<BR><BR>
+<a href="http://www.jupiterweb.com/rss/earthweb.html"><font color="#ffffff">See more EarthWeb Network feeds</font></a>
+
+</td>
+</tr>
+<tr><td><A HREF="http://www.codeguru.com/RealMedia/ads/click_lx.cgi/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/1168984014/125x800/OasDefault/ITChannelPlanet_Promo_GEMS_1ee/itcp_125x600.jpg/64616632643839373438306461383030" target="_top"><IMG SRC="http://www.codeguru.com/RealMedia/ads/Creatives/OasDefault/ITChannelPlanet_Promo_GEMS_1ee/itcp_125x600.jpg"  ALT=""  BORDER="0"></A><img src="http://www.codeguru.com/RealMedia/ads/adstream_lx.cgi/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/1168984014/125x800/OasDefault/ITChannelPlanet_Promo_GEMS_1ee/itcp_125x600.jpg/64616632643839373438306461383030?_RM_EMPTY_" Width="1" Height="1" Border="0"></td><tr>
+
+
+</table>    </td>
+
+    <td width="99%" bgcolor="#FFFFFF" background="" valign="top">
+    <img src="/img/sp.gif" width="629" height="1" border="0" alt="">
+
+    <table width="100%" border="0" cellspacing="0" cellpadding="4" border="0">
+      <tr>
+	<td>
+
+
+
+
+<span class='bodycopy'><b><a href='/'>Home</a></b> >> <b><a href='/cpp/'>Visual C++ / C++</a></b> >> <b><a href='/cpp/w-p/'>Windows Programming</a></b> >> <b><a href='/cpp/w-p/system/'>System</a></b> >> <b><a href='/cpp/w-p/system/threading/'>Threading</a></b><br><br>
+
+
+<!--content_start-->
+<table border="0" cellspacing="0" cellpadding="1" bgcolor="#000000">
+        <tr>
+          <td>
+            <table border="0" cellspacing="0" cellpadding="1" bgcolor="#CCCCCC">
+              <tr> 
+                <td><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><A HREF="http://www.codeguru.com/RealMedia/ads/click_lx.cgi/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/1845305039/ciu/OasDefault/SSO_Site_eBook_GEMS_1e/CIU2.html/64616632643839373438306461383030">
+<b>Project Management Guide: Developing a Web Site.</b> Best Practices, Tips and Strategies. Download Exclusive eBook Now.
+</A>
+
+</font></td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table><IMG SRC="http://www.codeguru.com/RealMedia/ads/adstream_lx.cgi/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/1845305039/ciu/OasDefault/SSO_Site_eBook_GEMS_1e/CIU2.html/64616632643839373438306461383030?_RM_EMPTY_" WIDTH=1 HEIGHT=1><BR>
+<font class="sectionhead">Windows Thread Pooling</font><br>
+<b>Rating:</b> <font color="#990000"><img src="/img/star.gif" width="13" height="12"><img src="/img/star.gif" width="13" height="12"><img src="/img/star.gif" width="13" height="12"><img src="/img/star.gif" width="13" height="12"><img src="/img/star.gif" width="13" height="12"></font><br>
+<br>
+
+<table cellpadding="5" cellspacing="0" border="0">
+  <tr>
+    <td align="right">
+<img src="/dbfiles/get_avatar.php?id=152031" border="0" alt="">
+    </td>
+    <td class="bodycopy">
+    <b>PlugwareSolutionsLtd</b> (<a href='/member.php/152031/'>view profile</a>)<br>
+    April 28, 2004    </td>
+  </tr>
+</table>	 
+
+
+
+<p>
+<span class="bodycopy">
+
+<p><p>Thread pooling describes a technique by which threads of execution are managed and to which work is distributed. Additional semantics such as concurrency control may also be defined. Thread pooling is a nice way to perform the following tasks:</p>
+
+<br><a href="#more">(continued)</a><p><center><A HREF="http://www.codeguru.com/RealMedia/ads/click_lx.cgi/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/1144504626/flex/OasDefault/IBM_CIO_Q208_GEMS_1ab/CIO_WP_infoAgenda_BOB.gif/64616632643839373438306461383030" target="_top"><IMG SRC="http://www.codeguru.com/RealMedia/ads/Creatives/OasDefault/IBM_CIO_Q208_GEMS_1ab/CIO_WP_infoAgenda_BOB.gif"  ALT=""  BORDER="0"></A><img src="http://www.codeguru.com/RealMedia/ads/adstream_lx.cgi/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/1144504626/flex/OasDefault/IBM_CIO_Q208_GEMS_1ab/CIO_WP_infoAgenda_BOB.gif/64616632643839373438306461383030?_RM_EMPTY_" Width="1" Height="1" Border="0"><br/><br/><table width="334" border="0" cellspacing="0" cellpadding="0" style="border:1px solid #000000;background-color:#dbffdb;">
+	<tr>
+		<td><a href="http://www.codeguru.com/RealMedia/ads/click_lx.ads/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/2058915875/accessunit/OasDefault/MSFT_RIA_SL_GEMS_3i/Door35735.gif/64616632643839373438306461383030?RIA/Door/35735" target="_blank"><img src="http://assets.devx.com/ria/auRiaRunTop.jpg" border="0"></a></td>
+	</tr><tr>
+		<td style="padding:10px;text-align:left">
+<script>
+function popWin(url){
+	spawn = window.open(url,'newWin','width=800,height=600,top=0,left=0,location=yes,toolbar=yes,status=true,scrollbars=yes,resizable=yes,fullscreen=no,menubar=no,directories=no');
+	spawn.focus();
+}
+</script>
+
+
+<SPAN STYLE="font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:14px;">
+ <a href="http://www.codeguru.com/RealMedia/ads/click_lx.ads/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/2058915875/accessunit/OasDefault/MSFT_RIA_SL_GEMS_3i/Door35735.gif/64616632643839373438306461383030?RIA/Door/35735" onclick="javascript:popWin('http://www.codeguru.com/RealMedia/ads/click_lx.ads/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/2058915875/accessunit/OasDefault/MSFT_RIA_SL_GEMS_3i/Door37507.gif/64616632643839373438306461383030?RIA/Door/37507')"  style="color:#2C4655;font-size:12px;text-decoration:none;"><b>Web Devs: <br>Moonlight as a Game Developer and Win Cool Prizes by Accepting the RIA Run Challenge </b></a><br>
+Now, your mission--should you choose to accept: Take your shot at gaming stardom if you think you might have what it takes to build a cool RIA game and you could <b>win an Xbox 360</b> or other fabulous prizes. <b>Hurry! You only have until May 15, 2008 to enter.</b>
+ <a href="http://www.codeguru.com/RealMedia/ads/click_lx.ads/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/2058915875/accessunit/OasDefault/MSFT_RIA_SL_GEMS_3i/Door35735.gif/64616632643839373438306461383030?RIA/Door/35735" onclick="javascript:popWin('http://www.codeguru.com/RealMedia/ads/click_lx.ads/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/2058915875/accessunit/OasDefault/MSFT_RIA_SL_GEMS_3i/Door37507.gif/64616632643839373438306461383030?RIA/Door/37507')" style="color:#EB8000;text-decoration:none;font-size:14px;font-weight:bold;">&raquo;</a>
+ </span>
+ <hr style="color:#cccccc;background-color:#cccccc;border:none;height:1px;">
+ <div style="line-height:6px;">&nbsp;</div>
+
+ <SPAN STYLE="font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:14px;">
+ <a href="http://www.codeguru.com/RealMedia/ads/click_lx.ads/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/2058915875/accessunit/OasDefault/MSFT_RIA_SL_GEMS_3i/Door37507.gif/64616632643839373438306461383030?RIA/Door/37507" onclick="javascript:popWin('http://www.codeguru.com/RealMedia/ads/click_lx.ads/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/2058915875/accessunit/OasDefault/MSFT_RIA_SL_GEMS_3i/Article36648.gif/64616632643839373438306461383030?RIA/Article/36648')"  style="color:#2C4655;font-size:12px;text-decoration:none;"><b>Article: <br>Leveraging Your Flash Development with Silverlight</b></a><br>
+You're not giving up Flash any time soon (and we don't blame you.) But if you could get your Flash application working in Silverlight, why wouldn't you? We show you the tools and techniques required to have your rockin' Flash application rolled for Silverlight. Learn more here.
+ <a href="http://www.codeguru.com/RealMedia/ads/click_lx.ads/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/2058915875/accessunit/OasDefault/MSFT_RIA_SL_GEMS_3i/Door37507.gif/64616632643839373438306461383030?RIA/Door/37507" onclick="javascript:popWin('http://www.codeguru.com/RealMedia/ads/click_lx.ads/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/2058915875/accessunit/OasDefault/MSFT_RIA_SL_GEMS_3i/Article36648.gif/64616632643839373438306461383030?RIA/Article/36648')" style="color:#EB8000;text-decoration:none;font-size:14px;font-weight:bold;">&raquo;</a>
+ </span>
+  <hr style="color:#cccccc;background-color:#cccccc;border:none;height:1px;">
+ <div style="line-height:6px;">&nbsp;</div>
+
+ <SPAN STYLE="font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:14px;">
+ <a href="http://www.codeguru.com/RealMedia/ads/click_lx.ads/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/2058915875/accessunit/OasDefault/MSFT_RIA_SL_GEMS_3i/Door37507.gif/64616632643839373438306461383030?RIA/Door/37507" onclick="javascript:popWin('http://www.codeguru.com/RealMedia/ads/click_lx.ads/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/2058915875/accessunit/OasDefault/MSFT_RIA_SL_GEMS_3i/Article37440.gif/64616632643839373438306461383030?RIA/Article/37440')"  style="color:#2C4655;font-size:12px;text-decoration:none;"><b>Article: <br>What Does it Take to Build the Best RIA?</b></a><br>
+With the proliferation of Rich Interactive Application (RIA) platform choices out there, you no longer have to take a one-size-fits-all approach to developing your next RIA application. Knowing the strengths (and weaknesses) of each platform can help you to decide the best RIA for your next application.
+ <a href="http://www.codeguru.com/RealMedia/ads/click_lx.ads/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/2058915875/accessunit/OasDefault/MSFT_RIA_SL_GEMS_3i/Door37507.gif/64616632643839373438306461383030?RIA/Door/37507" onclick="javascript:popWin('http://www.codeguru.com/RealMedia/ads/click_lx.ads/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/2058915875/accessunit/OasDefault/MSFT_RIA_SL_GEMS_3i/Article37440.gif/64616632643839373438306461383030?RIA/Article/37440')" style="color:#EB8000;text-decoration:none;font-size:14px;font-weight:bold;">&raquo;</a>
+ </span>
+  <hr style="color:#cccccc;background-color:#cccccc;border:none;height:1px;">
+ <div style="line-height:6px;">&nbsp;</div>
+
+  
+ </td>
+ </tr><tr>
+		<td><a href="http://www.codeguru.com/RealMedia/ads/click_lx.ads/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/2058915875/accessunit/OasDefault/MSFT_RIA_SL_GEMS_3i/Door37507.gif/64616632643839373438306461383030?RIA/Door/37507" target="_blank"><img src="http://assets.devx.com/ria/auRiaRunBottom.jpg" border="0"></a></td>
+	</tr>
+</table><IMG SRC="http://www.codeguru.com/RealMedia/ads/adstream_lx.cgi/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/2058915875/accessunit/OasDefault/MSFT_RIA_SL_GEMS_3i/RIA_Run_Contest_AU.html/64616632643839373438306461383030?_RM_EMPTY_" WIDTH=1 HEIGHT=1>
+</center><a name="more" /><p><b>Manage complexity</b></p>
+
+<p>Thread pooling is a natural fit for state-based processing. if you can decompose your system into a set of state machines, thread pooling works nicely and effectively in realizing your design. This provides the added benefit of simplifying the debugging of multithreaded applications in most cases.</p>
+
+<h4>Make your applications scalable</h4>
+
+<p>Properly implemented, the thread pool can enforce concurrency limits that will make your application scalable.</p>
+
+<h4>Introduce new code while minimizing risk</h4
+
+<p>Thread pooling lets you break execution into work units that are best described as development sandboxes. Sandboxes are fun and safe! How? Thread pooling promotes loose coupling between processes and naturally separates data from process. Any coupling between processes typically happens at a well-defined data point. This can be a lot easier to maintain over time, especially in large multithreaded applications.</p>
+
+<h3>Design</h3>
+
+<p>The conceptual model of a thread pool is simple: The pool starts threads running; work is queued to the pool; available threads execute the queued work. By using templates, the pool may be defined independent of the thread/work implementation (a technique known as static polymorphism).</p>
+
+<p><img src='/dbfiles/get_image.php?id=7073&lbl=THREAD_POOL_GIF&ds=20040428' width='333' height='295'></p>
+<p><i>Figure 1.</i> Thread pool collaboration diagram</p>
+
+<p>The thread pool is responsible for thread creation; threads commence execution at <tt>worker::thread_proc</tt>. Requests are queued to the thread pool; the worker prepares the request and the request is queued. When a thread is available to process the work, it may request the pending work from the thread pool with <tt>thread_pool::get_queued_status</tt>. If there is no pending work, the thread is suspended until work is available.</p>
+
+<h3>Chaining</h3>
+
+<p>While our worker implementation allows us to queue work, we can go one step further. The thread pool promises to help us break problems into discrete steps that maintain state minimizing complexity and risk while maximizing the raw power we can squeeze out of our box. However, our current implementation only allows us to queue one piece of work at a time, making it cumbersome to logically group sequential work together. We also need some way of knowing when that work is done so that we might queue some more work.</p>
+
+<p>The example:<br/>
+Take the system down; rebuild the system data; bring the system back online.</p>
+
+<p>Three steps, three pieces of work. I would like to be able to use this instead<a href="#foot1">[1]</a>:</p>
+
+<pre>
+thread_pool::instance().queue_request(
+   (core::chain(), <span class='codeKeyword'>new</span> system_down, <span class='codeKeyword'>new</span> rebuild_data,
+    <span class='codeKeyword'>new</span> system_up));
+</pre>
+
+<p>What is <tt>chain</tt>? A work unit! Rather, our chain simply acts as a container for the real work unit, which in turn is just a container of work units:</p>
+
+<pre>
+<span class='codeKeyword'>struct</span> chain {
+<span class='codeKeyword'>struct</span> data : work_unit, std::list&lt;smart_pointer&lt;work_unit&gt; &gt; {
+<span class='codeKeyword'>void</span> process();
+};
+
+chain() : m_work(<span class='codeKeyword'>new</span> data) {}
+chain&amp; <span class='codeKeyword'>operator</span>,(work_unit* p_work);
+<span class='codeKeyword'>operator</span> work_unit*() { <span class='codeKeyword'>return</span> m_work; }
+smart_pointer&lt;data&gt; m_work;
+};    <span class="codeComment">// struct chain</span>
+</pre>
+
+<p><tt>chain::operator</tt> does just as advertised:</p>
+
+<pre>
+m_work-&gt;push_back(p_work);
+<span class='codeKeyword'>return</span> *<span class='codeKeyword'>this</span>;
+</pre>
+
+<p><tt>chain::data::process()</tt> is just as simple:</p>
+
+<pre>
+front()-&gt;process();
+pop_front();
+
+<span class="codeComment">// if not empty, requeue</span>
+<span class='codeKeyword'>if</span> (<span class='codeKeyword'>true</span> == empty()) <span class='codeKeyword'>return</span>;
+thread_pool&lt;worker_thread&gt;::instance().queue_request(<span class='codeKeyword'>this</span>);
+</pre>
+
+<h3>Using the Code</h3>
+
+<p>Initialize the thread pool you want to use. Because thread pools are parameterized singletons, there will be a thread pool instance for each type of worker used. The <tt>global::thread_pool</tt> class is a convenient typedef for <tt>core::thread_pool&lt;core::worker_thread&gt;</tt>.</p>
+
+<pre>global::thread_pool::instance().initialize();</pre>
+
+<p>If you choose <tt>core::worker_thread</tt> as your worker implementation, all work will be derived from <tt>core::work_unit</tt> and your work will be performed when the process is called.</p>
+
+<pre>
+<span class='codeKeyword'>struct</span> mywork : core::work_unit
+{
+   <span class='codeKeyword'>void</span> process() <span class='codeKeyword'>throw</span>()
+   {
+      <span class="codeComment">// work is processed here</span>
+   }
+}
+</pre>
+
+<p>To queue work, create an instance of your class and initialize it as necessary. Use <tt>thread_pool::queue_request</tt> to queue the work.</p>
+
+<pre>
+<span class="codeComment">// demonstrate chaining</span>
+global::thread_pool::instance().queue_request(
+   (core::chain(), <span class='codeKeyword'>new</span> work_1, <span class='codeKeyword'>new</span> work_2, <span class='codeKeyword'>new</span> work_3));
+</pre>
+
+<p>To shut down the thread pool, use <tt>thread_pool::shutdown</tt>.</p>
+
+<pre>
+global::thread_pool::instance().shutdown();
+</pre>
+
+<p>To create other thread pools, simply define a worker thread and its constituent parts. The worker thread <b>must</b> define request_type, prepare_request, and thread_proc. The LPVOID parameter passed to thread_proc is always 0, and should not be used. The thread pool may be extended to provide context through this parameter. The code below defines an <tt>io::thread</tt> and an <tt>io::thread_pool</tt>.</p>
+
+<pre>
+   <span class="codeComment">// sample io worker thread</span>
+   <span class='codeKeyword'>namespace</span> io {
+   <span class='codeKeyword'>struct</span> <span class='codeKeyword'>thread</span>
+   {
+      <span class='codeKeyword'>typedef</span> io::session request_type;
+      <span class='codeKeyword'>static</span> <span class='codeKeyword'>void</span> prepare_request(request_type*) <span class='codeKeyword'>throw</span>();
+      <span class='codeKeyword'>static</span> <span class='codeKeyword'>void</span> thread_proc(LPVOID) <span class='codeKeyword'>throw</span>();
+   };    <span class="codeComment">// struct thread</span>
+
+   <span class='codeKeyword'>struct</span> thread_pool : core::thread_pool&lt;io::<span class='codeKeyword'>thread</span>&gt; {};
+   }     <span class="codeComment">// namespace io</span>
+</pre>
+
+<p>Users may access <tt>io::thread_pool</tt> with <tt>io::thread_pool::instance();</tt>.</p>
+
+<h3>About the Demo Program</h3>
+
+<p>The demo program does the following:</p>
+
+<ul>
+<li>Initializes the global::thread_pool instance.</li>
+<li>Instantiates three different types of work.</li>
+<li>Instantiates a chain tying the work together.</li>
+<li>Queues and processes the work.</li>
+<li>Shuts down the thread pool.</li>
+</ul>
+
+<p>If you are a member of a team, you can quickly divide and distribute the work to the team to implement as work units. Each work unit can be tested independently and integrated as a final product. Each person has a sandbox to play in.</p>
+
+<p>Thread pools are a fantastic tool for writing large, scalable systems quickly and safely without sacrificing performance.<br/>
+Happy Coding!</p>
+<p>
+  <b>About the Author</b><br>
+  Joshua Emele lives in San Francisco.  A member of <a href="http://www.plugwaresolutions.com" target="_blank">Plugware Solutions, Ltd.</a> he specializes in network, database, and workflow applications in c++. He is madly in love with life and his partner and enjoys playing classical guitar, hiking, and digital electronics.<br/>
+<br/>
+Plugware Solutions, Ltd. provides design, review, integration and implementation consulting services and is the maker of the Plugware Web Services Platform. <p>
+
+
+  <b>Downloads</b><br>
+    <li><a href="/dbfiles/get_file/thread_pool_demo.zip?id=7073&lbl=THREAD_POOL_DEMO_ZIP&ds=20040428">thread_pool_demo.zip</a> - Demo project for VS.NET 2003<br>
+    <li><a href="/dbfiles/get_file/thread_pool_src.zip?id=7073&lbl=THREAD_POOL_SRC_ZIP&ds=20040428">thread_pool_src.zip</a> - Thread pool source files<br>
+    <p>
+
+
+</span>
+<!--content_stop-->
+<!-- print box --->
+<link REL="stylesheet" HREF="http://www.internet.com/icom_includes/earthweb/img/epfs.css" TYPE="text/css">
+<table border="0" cellspacing="7" cellpadding="0">
+<tr><td>
+    <div id="tools_inews">
+
+		<b>Tools:</b>
+		<a href="/cpp/w-p/system/threading/email.php/c7073"><img src="http://www.internet.com/icom_includes/earthweb/img/badge_email.gif" alt="" width="71" height="17" hspace="2" vspace="2" border="0" align="absmiddle"></a>
+		<a href="/cpp/w-p/system/threading/print.php/c7073"><img src="http://www.internet.com/icom_includes/earthweb/img/badge_print.gif" alt="" width="71" height="17" hspace="2" vspace="2" border="0" align="absmiddle"></a>
+
+		<a href="http://digg.com/submit?phase=2&url=www.codeguru.com/cpp/w-p/system/threading/article.php/c7073/&title=&bodytext=&topic=" onclick="window.open('http://digg.com/submit?phase=2&url=www.codeguru.com/cpp/w-p/system/threading/article.php/c7073/&title=&bodytext=&topic=','digg','toolbar=no,width=900,height=600,scrollbars=yes'); return false;"><img src="http://www.internet.com/icom_includes/earthweb/img/badge_digg.gif" alt="" width="91" height="17" hspace="2" vspace="2" border="0" align="absmiddle" ></a>
+
+		<a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="http://www.internet.com/icom_includes/earthweb/img/badge_delicious.gif" alt="" width="91" height="17" hspace="2" vspace="2" border="0" align="absmiddle"></a>    </div>
+</td></tr>
+
+<tr><td>
+    <div id="tools_inews">
+<!-- search box -->
+<script type="text/javascript">
+function addFireFox() {
+	if ((typeof window.sidebar == "object") && (typeof window.sidebar.addSearchEngine == "function")) {
+		window.sidebar.addSearchEngine('http://www.codeguru.com/search/ffsearch.src', 'http://www.codeguru.com/search/ffsearch.png', 'CodeGuru', 'CodeGuru');
+	}
+	else {
+		alert(' x ');
+	}
+}
+
+function addIE() {
+	window.external.AddSearchProvider('/search/iesearch.xml');
+}
+</script>
+		<b>Add www.codeguru.com</b> to your favorites<br>
+
+		<a href="http://add.my.yahoo.com/rss?url=http://www.codeguru.com/icom_includes/feeds/codeguru/rss-all.xml"><img src="http://www.internet.com/icom_includes/earthweb/img/badge_myyahoo.gif" alt="" width="91" height="17" hspace="2" vspace="2" border="0"></a>
+
+		<a href="javascript:window.external.AddFavorite('http://www.codeguru.com', 'www.codeguru.com')"><img src="http://www.internet.com/icom_includes/earthweb/img/badge_windowsfav.gif" alt="" width="118" height="17" hspace="2" vspace="2" border="0"></a>
+		<div class="dotrule"></div>
+		<b>Add www.codeguru.com</b> to your browser search box<br>
+		<a href="javascript:addIE();"><img src="http://www.internet.com/icom_includes/earthweb/img/ie_icon.gif" alt="" hspace="2" vspace="2" border="0" align="absmiddle">IE 7</a> | <a href="javascript:addFireFox();"><img src="http://www.internet.com/icom_includes/earthweb/img/ff_icon.gif" alt="" hspace="2" vspace="2" border="0" align="absmiddle">Firefox 2.0</a> | <a href="javascript:addFireFox();"><img src="http://www.internet.com/icom_includes/earthweb/img/ff_icon.gif" alt="" hspace="2" vspace="2" border="0" align="absmiddle">Firefox 1.5.x</a> 
+<!-- search box -->
+<div class="dotrule"></div>
+		<b>Receive news</b> via our XML/RSS <a href="/icom_includes/feeds/codeguru/rss-all.xml">feed</a> <a href="/icom_includes/feeds/codeguru/rss-all.xml"><img src="http://www.internet.com/icom_includes/earthweb/img/xml.gif" alt="" width="36" height="14" hspace="0" border="0" align="absmiddle"><img src="http://www.internet.com/icom_includes/earthweb/img/rss.png" alt="" width="36" height="14" hspace="0" border="0" align="absmiddle"></a>    </div>
+</td></tr>
+</table>
+<p>
+<!-- end print box --->
+
+
+<p><img src="/icom_includes/headers/earthweb/jw_devsol.gif" /></p>
+<p><link REL="stylesheet" HREF="http://www.internet.com/icom_includes/special/css/featuredlinks/security.css" TYPE="text/css">
+<img align="bottom" src="http://www.codeguru.com/RealMedia/ads/Creatives/OasDefault/Devx_InterSystems_May08_1g/arrow.gif"> 
+<a href="http://www.codeguru.com/RealMedia/ads/click_lx.cgi/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/588794926/fl1/OasDefault/Devx_InterSystems_May08_1g/devxintersysdevclicklink.html/64616632643839373438306461383030" class="ss">Work With InterSystems. Not Separate Systems.
+Rapidly develop and deploy connectable applications.</a>
+<IMG SRC="http://www.codeguru.com/RealMedia/ads/adstream_lx.cgi/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/588794926/fl1/OasDefault/Devx_InterSystems_May08_1g/devxintersysdevclicklink.html/64616632643839373438306461383030?_RM_EMPTY_" WIDTH=1 HEIGHT=1><br><link REL="stylesheet" HREF="http://www.internet.com/icom_includes/special/css/featuredlinks/security.css" TYPE="text/css">
+<img align="bottom" src="http://www.codeguru.com/RealMedia/ads/Creatives/OasDefault/EMC_OEM_GEMS_1e/arrow.gif"> 
+<a href="http://www.codeguru.com/RealMedia/ads/click_lx.cgi/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/1564026638/fl2/OasDefault/EMC_OEM_GEMS_1e/FeaturedLink_WhitepaperEmbeddable.html/64616632643839373438306461383030" class="ss">Whitepaper: Embeddable Content Platform for OEM's 
+</a>
+<IMG SRC="http://www.codeguru.com/RealMedia/ads/adstream_lx.cgi/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/1564026638/fl2/OasDefault/EMC_OEM_GEMS_1e/FeaturedLink_WhitepaperEmbeddable.html/64616632643839373438306461383030?_RM_EMPTY_" WIDTH=1 HEIGHT=1><br><link REL="stylesheet" HREF="http://www.internet.com/icom_includes/special/css/featuredlinks/security.css" TYPE="text/css">
+<img align="bottom" src="http://www.codeguru.com/RealMedia/ads/Creatives/OasDefault/Elementool_GEMS_2d/arrow.gif"> 
+<a href="http://www.codeguru.com/RealMedia/ads/click_lx.cgi/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/125566411/fl3/OasDefault/Elementool_GEMS_2d/FeaturedLink_WhitepaperElementool.html/64616632643839373438306461383030" class="ss">Whitepaper: Elementool Bug Tracking--Keep Software Fixes On Course. 
+</a>
+<IMG SRC="http://www.codeguru.com/RealMedia/ads/adstream_lx.cgi/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/125566411/fl3/OasDefault/Elementool_GEMS_2d/FeaturedLink_WhitepaperElementool.html/64616632643839373438306461383030?_RM_EMPTY_" WIDTH=1 HEIGHT=1><br><link REL="stylesheet" HREF="http://www.internet.com/icom_includes/special/css/featuredlinks/security.css" TYPE="text/css">
+<img align="bottom" src="http://www.codeguru.com/RealMedia/ads/Creatives/OasDefault/IBM_InnovPortal_GEMS_1e/arrow.gif"> 
+<a href="http://www.codeguru.com/RealMedia/ads/click_lx.cgi/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/1600365641/fl4/OasDefault/IBM_InnovPortal_GEMS_1e/FeaturedLink_DataSheet.html/64616632643839373438306461383030" class="ss">Data Sheet: IBM Information Server Blade
+</a>
+<IMG SRC="http://www.codeguru.com/RealMedia/ads/adstream_lx.cgi/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/1600365641/fl4/OasDefault/IBM_InnovPortal_GEMS_1e/FeaturedLink_DataSheet.html/64616632643839373438306461383030?_RM_EMPTY_" WIDTH=1 HEIGHT=1><br><link REL="stylesheet" HREF="http://www.internet.com/icom_includes/special/css/featuredlinks/security.css" TYPE="text/css">
+<img align="bottom" src="http://www.codeguru.com/RealMedia/ads/Creatives/OasDefault/IBM_InnovPortal_GEMS_1d/arrow.gif"> 
+<a href="http://www.codeguru.com/RealMedia/ads/click_lx.cgi/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/346745110/fl5/OasDefault/IBM_InnovPortal_GEMS_1d/FeaturedLink_WhitepaperEnterprise.html/64616632643839373438306461383030" class="ss">Whitepaper: Enterprise Information Integration--Deployment Best Practices for Low-Cost Implementation 
+</a>
+<IMG SRC="http://www.codeguru.com/RealMedia/ads/adstream_lx.cgi/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/346745110/fl5/OasDefault/IBM_InnovPortal_GEMS_1d/FeaturedLink_WhitepaperEnterprise.html/64616632643839373438306461383030?_RM_EMPTY_" WIDTH=1 HEIGHT=1></p>
+
+<table border="0" width="100%" cellpadding="3">
+  <tr> 
+    <td align="left" valign="TOP"> <br>
+<a href="/cpp/w-p/system/threading/email.php/c7073/"><IMG SRC="/img/emailicon.gif" BORDER="0"></a>
+
+<a href="/cpp/w-p/system/threading/print.php/c7073/"><IMG SRC="/img/printicon.gif" BORDER="0"></a>           
+
+    </td>
+  </tr>
+</table>
+
+
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+<a name="rating"></a>
+<table width="100%" cellpadding="4" cellspacing="0" border="1" bgcolor="#CCCCCC">
+  <tr>
+    <input type="hidden" name="url" value="/cpp/w-p/system/threading/article.php/c7073/">
+    <td class="bodycopy">
+    <font color="#CC0000"><b>RATE THIS ARTICLE:</B></font>&nbsp;&nbsp;
+<input type="radio" value="5" name="vote">Excellent&nbsp;&nbsp;<input type="radio" value="4" name="vote">Very Good&nbsp;&nbsp;<input type="radio" value="3" name="vote">Average&nbsp;&nbsp;<input type="radio" value="2" name="vote">Below Average&nbsp;&nbsp;<input type="radio" value="1" name="vote">Poor&nbsp;&nbsp;<input type="image" src="/img/rate.gif" border="0" width="73" height="23" align="absmiddle">
+
+<br><br><b>(You must be signed in to rank an article. Not a member? <a href="/register.php?url=/cpp/w-p/system/threading/article.php/c7073/">Click here</a> to register)</b>
+    </td>
+  </tr>
+</form>
+</table>
+
+
+
+<br>
+
+
+  <!--COMMENTS-->  
+<table width="100%" cellpadding="4" cellspacing="0" border="0" bgcolor="#CCCCCC">
+  <tr>
+    <td class="bodycopy" colspan="2"><font class="title">Latest Comments: </font></td>
+  </tr>
+  <tr>
+    <td class="bodycopy">
+&#149; <a href="/cpp/w-p/system/threading/comments.php/c7073/?thread=2513">This is a realy fantastic code !</a> - socrat (07/09/2004)<br>
+ 
+<br><a href="/cpp/w-p/system/threading/comments.php/c7073/"><b>View All Comments</b></a>
+    <hr>
+    </td>
+  </tr> 
+  <tr>
+    <td class="bodycopy" colspan="2"><font class="title">Add a Comment: </font></td>
+  </tr>
+  <tr>
+    <td class="bodycopy">
+		    <input type="hidden" name="action" value="add">
+    <center>
+    <table class="bodycopy">
+      <tr valign="top">
+        <td align="right" class="bodycopy"><strong>Title: </strong></td>
+        <td><input type="text" name="title"  size="60" maxlength="256"></td>
+      </tr>
+      <tr valign="top">
+        <td align="right" class="bodycopy"><strong>Comment: </strong></td>
+        <td><textarea name="subject" rows=5 cols=60 wrap="physical"></textarea></td>
+      </tr>
+      <tr valign="top">
+        <td align="right" class="bodycopy"><strong>Pre-Formatted: </strong></td>
+        <td><input type="checkbox" name="preformatted" value="on">Check this if you want the text to display with the formatting as typed (good for source code)</td>
+      </tr>
+    </table>
+    <br>
+    <input type="image" src="/img/submit.gif" width="73" height="23" border="0" name="AddComment" value="Add Comment">
+    </center>
+		<br><br><b>(You must be signed in to comment on an article. Not a member? <a href="/register.php?url=/cpp/w-p/system/threading/article.php/c7073/">Click here</a> to register)</b>
+       </td>
+ </form>
+  </tr>
+</table>
+
+
+        </td>
+      </tr>
+
+    </table>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" bgcolor="#666666"><img src="/img/sp.gif" width="1" height="2" border="0" alt=""></td>
+  </tr>
+</table>
+
+<table width="100%" cellpadding="10" cellspacing="0" border="0" bgcolor="#FFFFFF">
+  <tr>
+    <td align="center"><A HREF="http://www.codeguru.com/RealMedia/ads/click_lx.cgi/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/527929322/468x60-2/OasDefault/HP_TSGSoft_BSM_eBook_GEMS_1h/HPBSMeBook_LEO.gif/64616632643839373438306461383030" target="_top"><IMG SRC="http://www.codeguru.com/RealMedia/ads/Creatives/OasDefault/HP_TSGSoft_BSM_eBook_GEMS_1h/HPBSMeBook_LEO.gif"  ALT=""  BORDER="0"></A><img src="http://www.codeguru.com/RealMedia/ads/adstream_lx.cgi/intm/webdev/www.codeguru.com/cpp/w-p/system/threading/article/c7073/i/527929322/468x60-2/OasDefault/HP_TSGSoft_BSM_eBook_GEMS_1h/HPBSMeBook_LEO.gif/64616632643839373438306461383030?_RM_EMPTY_" Width="1" Height="1" Border="0"></td>
+  </tr>
+  <tr>
+    <td class="bodycopy" align="center">
+      <CENTER>
+
+<!-- Google Analytics -->
+<script src="/icom_includes/footers/scripts/ga.js"  type="text/javascript">
+</script>
+<script  type="text/javascript" >
+<!--     hide from no js browsers
+delete Array.prototype.itemValidation;
+delete Array.prototype.isArray;
+var superTracker = _gat._getTracker("UA-2838492-1");
+superTracker._initData();
+superTracker._trackPageview();
+
+-->
+</script>
+<script  type="text/javascript" >
+   var site_name =  location.hostname;
+   if ( site_name.indexOf("www.") != 0 ) {
+     site_name  = "www."+site_name ;
+   }
+   document.write("<SCR" + "IPT LANGUAGE='JavaScript1.2' SRC='/icom_includes/footers/sites/"+ site_name +".js' TYPE='text/javascript'><\/SCR" + "IPT>");
+-->
+</script>
+<script  type="text/javascript" >
+<!--     hide from no js browsers
+   pageTracker._initData();
+   pageTracker._trackPageview();
+   // -->
+</script>
+<!-- End Google Analytics -->
+
+<script src="/icom_includes/footers/scripts/pngadapt.js" type="text/javascript"></script>
+
+<BR CLEAR="all"><br><center><table border="0" cellspacing="0" cellpadding="5">
+                <tr> 
+                  <form method="POST" action="http://search.internet.com/www.jupiterweb.com" target="_top">
+
+                    <td align="center">
+<table border="0" class="mgfoot">
+  <tr><td class="foot_alt" align="center" style="vertical-align:middle;">
+					 <img src="/icom_includes/footers/onlinemedia_footer.png" alt="JupiterOnlineMedia" width="175" height="17" hspace="0" border="0"> 
+                      <p align="center"> 
+                      <a target="_blank" href="http://www.internet.com" class="foot" target="_top"><img src="/icom_includes/footers/icom_foot.png" alt="internet.com" width="97" height="15" hspace="0" border="0" align="absmiddle" style="margin-top:expression('-24px');"></a><img src="/icom_includes/footers/ruledivide_foot.gif" alt="" width="1" height="25" hspace="10" border="0" align="absmiddle"><a target="_blank" href="http://www.earthweb.com" target="_top"><img src="/icom_includes/footers/earthweb_foot.png" alt="earthweb.com" width="93" height="10" hspace="5" border="0" align="absmiddle" style="margin-top:expression('-22px');"></a><img src="/icom_includes/footers/ruledivide_foot.gif" alt="" width="1" height="25" hspace="10" border="0" align="absmiddle"><a target="_blank" href="http://www.devx.com" target="_top"><img src="/icom_includes/footers/devx_foot.png" alt="Devx.com" width="34" height="30" hspace="0" border="0" align="absmiddle"></a><img src="/icom_includes/footers/ruledivide_foot.gif" alt="" width="1" height="25" hspace="10" border="0" align="absmiddle"><a target="_blank" href="http://www.mediabistro.com" target="_top"><img src="/icom_includes/footers/mediabistro_foot.png" alt="mediabistro.com" width="100" height="35" hspace="0" border="0" align="absmiddle"></a><img src="/icom_includes/footers/ruledivide_foot.gif" alt="" width="1" height="25" hspace="10" border="0" align="absmiddle"><a target="_blank" href="http://www.graphics.com" target="_top"><img src="/icom_includes/footers/grcom_foot.png" alt="Graphics.com" width="97" height="16" hspace="0" border="0" align="absmiddle" style="margin-top:expression('-24px');"></a></td></tr></table>
+                      <p> 
+                      <font size="-2" face="verdana, arial, helvetica"><b>Search:</b> 
+                      <input type="HIDDEN" name="IC_Summary" value="1">
+                      <input type="HIDDEN" name="IC_StartNumber" value="0">
+
+                      <input type="HIDDEN" name="IC_BatchSize" value="10">
+
+                      <input type="HIDDEN" name="IC_RelevanceThreshold" value="50">
+                      <input type="hidden" name="IC_QueryDatabase" value="all">
+                      <input type="text" name="IC_QueryText" size="45">
+                      <input type="image" border="0" value="Find" name="SUBMIT" src="/icom_includes/footers/but_find.gif" width="41" height="20" align="absmiddle">
+                      </font>
+                      <p>
+                      <font size="-2" face="verdana, arial, helvetica">
+
+                     <a target="_blank" href="http://www.jupitermedia.com/" class="foot"> Jupitermedia Corporation</a> has two divisions: <a target="_blank" href="http://www.jupiterimages.com/" class="foot">Jupiterimages</a> and <a target="_blank" href="http://www.jupitermedia.com/onlinemedia.html" class="foot">JupiterOnlineMedia</a><P> <font size="-2" face="verdana, arial, helvetica"><a target="_blank" href="http://www.jupitermedia.com/corporate/" class="foot" target="_top">Jupitermedia Corporate Info</a>                      <p>
+
+                      <div class="foot"><!--Copyright 2005-2007-->
+
+<script type="text/javascript">
+document.write(' Copyright ');
+var now = new Date();
+document.write(  + now.getFullYear());
+document.write(' Jupitermedia Corporation All Rights Reserved.');
+</script>
+<noscript> Copyright 2008 Jupitermedia Corporation All Rights Reserved.</noscript>
+<br>
+                        <a target="_blank" href="http://www.jupitermedia.com/corporate/legal.html" class="foot" target="_top">Legal 
+                        Notices</a>, <a target="_blank" href="http://www.jupitermedia.com/corporate/reprints.html#Licensing1" class="foot" target="_top">Licensing</a>, 
+                        <a target="_blank" href="http://www.jupitermedia.com/corporate/reprints.html#Reprints1" class="foot" target="_top">Reprints</a>, 
+                        & <a target="_blank" href="http://www.jupitermedia.com/corporate/reprints.html#Permissions" class="foot" target="_top">Permissions</a>, 
+                        <a target="_blank" href="http://www.jupitermedia.com/corporate/privacy/privacypolicy.html" class="foot" target="_top">Privacy 
+                        Policy</a>. </font>
+
+                      <p> <font size="-2" face="verdana, arial, helvetica"><a target="_blank" href="http://www.internet.com/mediakit/" class="foot" target="_top">Advertise</a> | <a target="_blank" href="http://e-newsletters.internet.com/" class="foot">Newsletters</a> 
+                       | <a target="_blank" href="http://www.justtechjobs.com/" class="foot" target="_top">Tech 
+                        Jobs</a> | <a target="_blank" href="http://www.internetshopper.com/" class="foot" target="_top">Shopping</a> | <a target="_blank" href="http://e-newsletters.internet.com/announcement_list.html" class="foot" target="_top">E-mail 
+                        Offers</a></div></font>
+
+                    </td>
+                  </form>
+                </tr>
+              </table></center>
+
+<!-- start solutions links section -->
+<link href="/icom_includes/footers/css/solstyle.css" rel="stylesheet" type="text/css">
+<center>
+<div id="solsect" style="margin: 0pt auto; padding-top: 10px; padding-left: 0px; padding-right: 0px; width: 100%;">
+  <div style="margin-bottom: 15px;">
+    <div style="clear: left; padding-left:0px; padding-right:0px;" class="collapseWrap">
+      <table width="100%" cellspacing="1" cellpadding="1">
+        <tr>
+          <td style="background:url('/icom_includes/footers/soltopbg.gif') repeat-x;" height="26" align="left"><a style="font-size:16px; font-weight:bold; color:#333333; font-family:Arial, Helvetica, sans-serif; text-decoration:none; margin-left:5px;" href="#">Solutions</a></td>
+        </tr>
+                <tr>
+          <td bgcolor="#e1e2dc" class="sitemappad"  align="left">
+            <table cellpadding="5" cellspacing="0" border="0" bgcolor="#e7e8e3" style="background:url('/icom_includes/footers/solmidbg.gif') repeat-x;">
+              <tr>
+                <td align="left" colspan="3" style="font-size:12px;">Whitepapers and eBooks</td>
+              </tr>
+              <tr>
+                <td width="50%" valign="top" align="left">
+                                    <a target="_blank" href="http://www.devx.com/HPSC/Door/37685">Whitepaper: HP Integrated Citrix XenServer for HP ProLiant Servers </a><br>
+                                                    <a target="_blank" href="http://www.devx.com/go-parallel/Article/37573">Intel Go Parallel Portal: Interview with C++ Guru Herb Sutter </a><br>
+                                                    <a target="_blank" href="http://www.devx.com/avaya/Article/37700">Avaya Article: Setting Up a SIP A/S Development Environment </a><br>
+                                                    <a target="_blank" href="http://www.devx.com/IT_Innovation/Article/36066">IBM Article: How Cool Is Your Data Center?</a><br>
+                                                    <a target="_blank" href="http://www.devx.com/MS_System_Center/Article/36903">Microsoft Article: Managing Virtual Machines with Microsoft System Center </a><br>
+                                                    <a target="_blank" href="http://www.devx.com/avaya/Article/37477">Avaya Article: How to Begin Developing with Avaya's Event Processing Language</a><br>
+                                </td>
+                <td width="10"></td>
+                <td width="50%" valign="top" align="left">
+                                                    <a target="_blank" href="http://www.devx.com/HPSC/Door/37383">HP eBook: Storage Networking , Part 1</a><br>
+                                                    <a target="_blank" href="http://www.serverwatch.com/tutorials/article.php/3731601">ServerWatch.com Article: Tip of the Trade--IP Address Management </a><br>
+                                                    <a target="_blank" href="http://www.itchannelplanet.com/channel_insight/article.php/3733161/Enterprise%20Fixed-Mobile%20Convergence%20Can%20Be%20Lucrative%20for%20Channel">ITChannelPlanet.com Article: Enterprise Fixed-Mobile Convergence Can Be Lucrative</a><br>
+                                                    <a target="_blank" href="http://www.devx.com/MS_System_Center/Article/36901">Microsoft Article: Solving Data Center Complexity with Microsoft System Center Configuration Manager 2007 </a><br>
+                                                    <a target="_blank" href="http://www.devx.com/ebook/Link/36783">Internet.com eBook: All About Botnets </a><br>
+                                                    <a target="_blank" href="http://www.devx.com/solutions">MORE WHITEPAPERS, EBOOKS, AND ARTICLES</a><br>
+                                                  </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+                <tr>
+          <td bgcolor="#e1e2dc" class="sitemappad"  align="left">
+            <table cellpadding="5" cellspacing="0" border="0" bgcolor="#e7e8e3" style="background:url('/icom_includes/footers/solmidbg.gif') repeat-x;">
+              <tr>
+                <td align="left" colspan="3" style="font-size:12px;">Webcasts</td>
+              </tr>
+              <tr>
+                <td width="50%" valign="top" align="left">
+                                    <a target="_blank" href="http://www.devx.com/HPSC/Door/37685">On-Demand Webcast: Five Virtualization Trends to Watch </a><br>
+                                                    <a target="_blank" href="http://ad.doubleclick.net/clk;192031513;24975484;h?http://www.devx.com/HPSC/HTML/37183">HP Video: Page Cost Calculator</a><br>
+                                                    <a target="_blank" href="http://www.devx.com/HPSC/Door/37383">HP Webcast: Storage Is Changing Fast - Be Ready or Be Left Behind</a><br>
+                                </td>
+                <td width="10"></td>
+                <td width="50%" valign="top" align="left">
+                                                    <a target="_blank" href="http://www.devx.com/RIA/Article/36298">Microsoft Silverlight Video: Creating Fading Controls with Expression Design and Expression Blend 2</a><br>
+                                                    <a target="_blank" href="http://www.devx.com/solutions">MORE WEBCASTS, PODCASTS, AND VIDEOS</a><br>
+                                                  </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+                <tr>
+          <td bgcolor="#e1e2dc" class="sitemappad"  align="left">
+            <table cellpadding="5" cellspacing="0" border="0" bgcolor="#e7e8e3" style="background:url('/icom_includes/footers/solmidbg.gif') repeat-x;">
+              <tr>
+                <td align="left" colspan="3" style="font-size:12px;">Downloads and eKits</td>
+              </tr>
+              <tr>
+                <td width="50%" valign="top" align="left">
+                                    <a target="_blank" href="http://www.devx.com/SunSC/Link/37301">Sun Download: Solaris 8 Migration Assistant </a><br>
+                                                    <a target="_blank" href="http://www.devx.com/Sybase/Door/37529">Sybase Download: SQL Anywhere Developer Edition </a><br>
+                                                    <a target="_blank" href="http://www.devx.com/RedGateVS/Door/37320">Red Gate Download: SQL Backup Pro and free DBA Best Practices eBook</a><br>
+                                </td>
+                <td width="10"></td>
+                <td width="50%" valign="top" align="left">
+                                                    <a target="_blank" href="http://www.devx.com/RedGateVS/Door/37329">Red Gate Download: SQL Compare Pro 6</a><br>
+                                                    <a target="_blank" href="http://www.devx.com/IronSpeedVS/Door/17479">Iron Speed Designer Application Generator</a><br>
+                                                    <a target="_blank" href="http://www.devx.com/solutions">MORE DOWNLOADS, EKITS, AND FREE TRIALS</a><br>
+                                                  </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+                <tr>
+          <td bgcolor="#e1e2dc" class="sitemappad"  align="left">
+            <table cellpadding="5" cellspacing="0" border="0" bgcolor="#e7e8e3" style="background:url('/icom_includes/footers/solmidbg.gif') repeat-x;">
+              <tr>
+                <td align="left" colspan="3" style="font-size:12px;">Tutorials and Demos</td>
+              </tr>
+              <tr>
+                <td width="50%" valign="top" align="left">
+                                    <a target="_blank" href="http://www.devx.com/eTouch/Door/37668">eTouch PDF: Conquering the Tyranny of E-Mail and Word Processors </a><br>
+                                                    <a target="_blank" href="http://www.devx.com/IT_Innovation/Article/36065">IBM Article:  Collaborating in the High-Performance Workplace</a><br>
+                                                    <a target="_blank" href="http://www.devx.com/HPSC/Door/37383">HP Demo: StorageWorks EVA4400</a><br>
+                                </td>
+                <td width="10"></td>
+                <td width="50%" valign="top" align="left">
+                                                    <a target="_blank" href="http://www.devx.com/RIA/Article/35777">Microsoft How-to Article: Get Going with Silverlight and Windows Live </a><br>
+                                                    <a target="_blank" href="http://www.devx.com/solutions">MORE TUTORIALS, DEMOS AND STEP-BY-STEP GUIDES</a><br>
+                                                  </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+              </table>
+    </div>
+  </div>
+</div>
+</center>
+<!-- end solutions links section -->
+</CENTER>
+
+    </td>
+  </tr>
+  
+</table>     </BODY>
+</HTML>
+   
