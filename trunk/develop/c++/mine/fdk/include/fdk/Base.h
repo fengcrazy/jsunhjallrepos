@@ -62,7 +62,7 @@ namespace fdk
 		return (a > b) ? a : b;
 	}
 	
-	extern FDK_API const char* const HEX_TABLE[256];
+	FDK_API const char* toHexString(byte_t c);
 	FDK_API std::string toHexString(const void* buffer, size_t size);
 
 	const size_t __bufferSize__ = 4096;
