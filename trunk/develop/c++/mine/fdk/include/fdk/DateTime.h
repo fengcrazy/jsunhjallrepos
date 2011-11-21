@@ -8,8 +8,6 @@ namespace fdk
 {	
 	typedef time_t UnixTimestamp;  // 从UTC基准时间点(1970年1月1号0点0分0秒)开始的秒数，最多只能表示到2038年
 	const int UNIXTIMESTAMP_BASE = 0; // UTC基准时间点
-	const int YEAR_MIN = 1970;
-	const int YEAR_MAX = 2038;
 	const int MONTH_MIN = 1;
 	const int MONTH_MAX = 12;
 	const int DAY_MIN = 1;
@@ -33,15 +31,12 @@ namespace fdk
 	FDK_API int getDaysOfYearMonth(int year, int month);
 	FDK_API bool isValidDate(int year, int month, int day);
 	FDK_API bool isValidTime(int hour, int minute, int second);
-	FDK_API void makeTimeStruct(tm& output, int year, int month, int day, int hour, int minute, int second);
-	FDK_API bool fromUnixTimestamp(int& year, int& month, int& day, int& hour, int& minute, int& second, UnixTimestamp timestamp);
-	FDK_API UnixTimestamp toUnixTimestamp(int year, int month, int day, int hour, int minute, int second);
 	
 	// 表示不早于UTC基准日期的本地日期
 	class FDK_API Date
 	{
 	public:
-		static const Date& base(); // UTC基准时间点对应的本地日期
+		static const Date& BASE(); // UTC基准时间点对应的本地日期
 		static Date today(); // 返回当前的本地日期
 		Date(); // as base()
 		Date(int year, int month, int day); // 如果给定日期非法则效果同默认构造
@@ -65,7 +60,7 @@ namespace fdk
 	class FDK_API Time
 	{
 	public:
-		static const Time& base(); // 00:00:00
+		static const Time& BASE(); // 00:00:00
 		static Time now(); // 返回当前的本地时间
 		Time(); // as base()
 		Time(int hour, int minute, int second); // 如果给定时间非法则效果同默认构造
@@ -89,7 +84,7 @@ namespace fdk
 	class FDK_API DateTime
 	{
 	public:
-		static const DateTime& base(); // UTC基准时间点对应的本地时间
+		static const DateTime& BASE(); // UTC基准时间点对应的本地时间
 		static DateTime now(); // 返回当前的本地时间
 		DateTime(); // as base()
 		DateTime(int year, int month, int day, int hour=0, int minute=0, int second=0); // 如果给定时间非法则效果同默认构造
@@ -115,6 +110,12 @@ namespace fdk
 		int m_second;
 	};
 
+	inline const Date& Date::BASE()
+	{
+		static Date instance;
+		return instance;
+	}
+
 	inline int Date::year() const
 	{
 		return m_year;
@@ -130,6 +131,12 @@ namespace fdk
 		return m_day;
 	}
 
+	inline const Time& Time::BASE()
+	{
+		static Time instance;
+		return instance;
+	}
+
 	inline int Time::hour() const
 	{
 		return m_hour;
@@ -143,6 +150,12 @@ namespace fdk
 	inline int Time::second() const
 	{
 		return m_second;
+	}
+
+	inline const DateTime& DateTime::BASE()
+	{
+		static DateTime instance;
+		return instance;
 	}
 
 	inline int DateTime::year() const

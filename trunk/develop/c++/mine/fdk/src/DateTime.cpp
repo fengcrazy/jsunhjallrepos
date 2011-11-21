@@ -2,13 +2,47 @@
 #include <sstream>
 #include <iomanip>
 #pragma warning(disable: 4996)
-namespace
-{
-
-}
 
 namespace fdk
 {
+	namespace
+	{
+		void makeTimeStruct(tm& output, int year, int month, int day, int hour, int minute, int second)
+		{
+			zeroMemory(output);
+			output.tm_year = year - 1900;
+			output.tm_mon = month - 1;
+			output.tm_mday = day;
+			output.tm_hour = hour;
+			output.tm_min = minute;
+			output.tm_sec = second;
+		}
+
+		bool fromUnixTimestamp(int& year, int& month, int& day, int& hour, int& minute, int& second, UnixTimestamp timestamp)
+		{
+			time_t time_t_object = static_cast<time_t>(timestamp);
+			tm* timeStruct = localtime(&time_t_object);
+			if (!timeStruct)
+			{
+				return false;
+			}
+			year = timeStruct->tm_year +1900;
+			month = timeStruct->tm_mon + 1;
+			day = timeStruct->tm_mday;
+			hour = timeStruct->tm_hour;
+			minute = timeStruct->tm_min;
+			second = timeStruct->tm_sec;
+			return true;
+		}
+
+		UnixTimestamp toUnixTimestamp(int year, int month, int day, int hour, int minute, int second)
+		{
+			tm timeStruct;
+			makeTimeStruct(timeStruct, year, month, day, hour, minute, second);
+			return static_cast<UnixTimestamp>(mktime(&timeStruct));
+		}
+	}
+
 	FDK_API bool isLeapYear(int year)
 	{
 		// 四年一闰，百年不闰，四百年闰
@@ -48,47 +82,6 @@ namespace fdk
 			second >= SECOND_MIN && second <= SECOND_MAX;
 	}
 
-	FDK_API void makeTimeStruct(tm& output, int year, int month, int day, int hour, int minute, int second)
-	{
-		zeroMemory(output);
-		output.tm_year = year - 1900;
-		output.tm_mon = month - 1;
-		output.tm_mday = day;
-		output.tm_hour = hour;
-		output.tm_min = minute;
-		output.tm_sec = second;
-	}
-
-	FDK_API bool fromUnixTimestamp(int& year, int& month, int& day, int& hour, int& minute, int& second, UnixTimestamp timestamp)
-	{
-		time_t time_t_object = static_cast<time_t>(timestamp);
-		tm* timeStruct = localtime(&time_t_object);
-		if (!timeStruct)
-		{
-			return false;
-		}
-		year = timeStruct->tm_year +1900;
-		month = timeStruct->tm_mon + 1;
-		day = timeStruct->tm_mday;
-		hour = timeStruct->tm_hour;
-		minute = timeStruct->tm_min;
-		second = timeStruct->tm_sec;
-		return true;
-	}
-
-	FDK_API UnixTimestamp toUnixTimestamp(int year, int month, int day, int hour, int minute, int second)
-	{
-		tm timeStruct;
-		makeTimeStruct(timeStruct, year, month, day, hour, minute, second);
-		return static_cast<UnixTimestamp>(mktime(&timeStruct));
-	}
-
-	const Date& Date::base()
-	{
-		static Date instance;
-		return instance;
-	}
-
 	Date Date::today()
 	{
 		DateTime dateTime = DateTime::now();
@@ -97,16 +90,16 @@ namespace fdk
 
 	Date::Date()
 	{
-		m_year = DateTime::base().year();
-		m_month = DateTime::base().month();
-		m_day = DateTime::base().day();
+		m_year = DateTime::BASE().year();
+		m_month = DateTime::BASE().month();
+		m_day = DateTime::BASE().day();
 	}
 
 	Date::Date(int year, int month, int day)
 	{
-		m_year = DateTime::base().year();
-		m_month = DateTime::base().month();
-		m_day = DateTime::base().day();
+		m_year = DateTime::BASE().year();
+		m_month = DateTime::BASE().month();
+		m_day = DateTime::BASE().day();
 		reset(year, month, day);
 	}
 
@@ -117,7 +110,7 @@ namespace fdk
 			return false;
 		}
 		UnixTimestamp timestamp = toUnixTimestamp(year, month, day, 
-			DateTime::base().hour(), DateTime::base().minute(), DateTime::base().second());
+			DateTime::BASE().hour(), DateTime::BASE().minute(), DateTime::BASE().second());
 		if (timestamp < UNIXTIMESTAMP_BASE)
 		{
 			return false;
@@ -162,12 +155,6 @@ namespace fdk
 		if (m_month != o.m_month) { return m_month < o.m_month; }
 		if (m_day != o.m_day) { return m_day < o.m_day; }
 		return false;
-	}
-
-	const Time& Time::base()
-	{
-		static Time instance;
-		return instance;
 	}
 
 	Time Time::now()
@@ -246,12 +233,6 @@ namespace fdk
 		if (m_minute != o.m_minute) { return m_minute < o.m_minute; }
 		if (m_second != o.m_second) { return m_second < o.m_second; }
 		return false;
-	}
-
-	const DateTime& DateTime::base()
-	{
-		static DateTime instance;
-		return instance;
 	}
 
 	DateTime DateTime::now()
