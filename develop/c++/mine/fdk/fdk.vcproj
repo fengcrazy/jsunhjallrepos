@@ -86,7 +86,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy $(ConfigurationName)\fdk.lib lib\fdk.lib&#x0D;&#x0A;copy $(ConfigurationName)\fdk.dll lib\fdk.dll&#x0D;&#x0A;copy $(ConfigurationName)\fdk.dll ..\fdktest\fdk.dll"
+				CommandLine="copy $(ConfigurationName)\fdk.lib lib\fdk.lib&#x0D;&#x0A;copy $(ConfigurationName)\fdk.dll lib\fdk.dll&#x0D;&#x0A;copy $(ConfigurationName)\fdk.dll ..\fdktest\fdk.dll&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
@@ -182,6 +182,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\MD5.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\src\String.cpp"
 				>
 			</File>
@@ -197,6 +201,10 @@
 			</File>
 			<File
 				RelativePath=".\include\fdk\DateTime.h"
+				>
+			</File>
+			<File
+				RelativePath=".\include\fdk\MD5.h"
 				>
 			</File>
 			<File

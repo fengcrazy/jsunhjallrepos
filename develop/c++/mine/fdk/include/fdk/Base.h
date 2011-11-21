@@ -1,5 +1,5 @@
-#ifndef __FDK_Base_H_INCLUDE
-#define __FDK_Base_H_INCLUDE
+#ifndef __FDK_BASE_H_INCLUDE
+#define __FDK_BASE_H_INCLUDE
 
 #ifdef FDK_EXPORTS
 #define FDK_API __declspec(dllexport)
@@ -9,6 +9,7 @@
 
 #include <memory.h>
 #include <assert.h>
+#include <string>
 
 namespace fdk
 {
@@ -61,6 +62,9 @@ namespace fdk
 		return (a > b) ? a : b;
 	}
 	
+	extern FDK_API const char* const HEX_TABLE[256];
+	FDK_API std::string toHexString(const void* buffer, size_t size);
+
 	const size_t __bufferSize__ = 4096;
 	extern FDK_API char __buffer__[__bufferSize__+1];
 }
@@ -107,4 +111,4 @@ namespace fdk
 	#endif
 #endif
 
-#endif // __FDK_Base_H_INCLUDE
+#endif
