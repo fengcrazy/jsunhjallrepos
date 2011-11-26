@@ -179,6 +179,10 @@
 				RelativePath=".\src\FindFile.cpp"
 				>
 			</File>
+			<File
+				RelativePath=".\src\IConv.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="include"
@@ -191,6 +195,10 @@
 			</File>
 			<File
 				RelativePath=".\include\fdkwin\FindFile.h"
+				>
+			</File>
+			<File
+				RelativePath=".\include\fdkwin\IConv.h"
 				>
 			</File>
 		</Filter>
