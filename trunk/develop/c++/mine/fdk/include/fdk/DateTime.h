@@ -110,6 +110,10 @@ namespace fdk
 		int m_second;
 	};
 
+	FDK_API Date getDate(const DateTime& dateTime);
+	FDK_API Time getTime(const DateTime& dateTime);
+	FDK_API DateTime makeDateTime(const Date& date, const Time& time);
+
 	inline const Date& Date::BASE()
 	{
 		static Date instance;
