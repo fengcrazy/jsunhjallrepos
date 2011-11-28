@@ -321,4 +321,19 @@ namespace fdk
 		if (m_second != o.m_second) { return m_second < o.m_second; }
 		return false;
 	}
+
+	FDK_API Date getDate(const DateTime& dateTime)
+	{
+		return Date(dateTime.year(), dateTime.month(), dateTime.day());
+	}
+
+	FDK_API Time getTime(const DateTime& dateTime)
+	{
+		return Time(dateTime.hour(), dateTime.minute(), dateTime.second());
+	}
+
+	FDK_API DateTime makeDateTime(const Date& date, const Time& time)
+	{
+		return DateTime(date.year(), date.month(), date.day(), time.hour(), time.minute(), time.second());
+	}
 }
