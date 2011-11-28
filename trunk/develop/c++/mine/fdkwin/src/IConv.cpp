@@ -1,30 +1,30 @@
 #include <fdkwin/IConv.h>
 
-namespace
-{
-	void mb_to_wc(std::wstring& output, const std::string& src, DWORD codePage)
-	{
-		int wlen = ::MultiByteToWideChar(codePage, 0, src.c_str(), (int)src.length(), NULL, 0);
-		wchar_t* wbuf = new wchar_t[wlen+1];
-		::MultiByteToWideChar(codePage, 0, src.c_str(), (int)src.length(), wbuf, wlen);
-		wbuf[wlen] = L'\0';
-		output = wbuf;
-		delete []wbuf;
-	} 
-
-	void wc_to_mb(std::string& output, const std::wstring& src, DWORD codePage)
-	{
-		int len = ::WideCharToMultiByte(codePage, 0, src.c_str(), (int)src.length(), NULL, 0, 0, 0); 
-		char* buf = new char[len+1];
-		::WideCharToMultiByte(codePage, 0, src.c_str(), (int)src.length(), buf, len, 0, 0); 
-		buf[len] = '\0';
-		output = buf;
-		delete []buf;
-	}
-}
-
 namespace fdkwin
 {
+	namespace
+	{
+		void mb_to_wc(std::wstring& output, const std::string& src, DWORD codePage)
+		{
+			int wlen = ::MultiByteToWideChar(codePage, 0, src.c_str(), (int)src.length(), NULL, 0);
+			wchar_t* wbuf = new wchar_t[wlen+1];
+			::MultiByteToWideChar(codePage, 0, src.c_str(), (int)src.length(), wbuf, wlen);
+			wbuf[wlen] = L'\0';
+			output = wbuf;
+			delete []wbuf;
+		} 
+
+		void wc_to_mb(std::string& output, const std::wstring& src, DWORD codePage)
+		{
+			int len = ::WideCharToMultiByte(codePage, 0, src.c_str(), (int)src.length(), NULL, 0, 0, 0); 
+			char* buf = new char[len+1];
+			::WideCharToMultiByte(codePage, 0, src.c_str(), (int)src.length(), buf, len, 0, 0); 
+			buf[len] = '\0';
+			output = buf;
+			delete []buf;
+		}
+	}
+
 	FDKWIN_API void ansi_to_unicode(std::wstring& output, const std::string& input)
 	{
 		mb_to_wc(output, input, CP_ACP);
