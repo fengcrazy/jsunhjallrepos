@@ -71,7 +71,7 @@ namespace fdk
 	FDK_API const char* toHexString(byte_t c);
 	FDK_API std::string toHexString(const void* buffer, size_t size);
 
-	const size_t __bufferSize__ = 4096;
+	const size_t __bufferSize__ = 1024*256;
 	extern FDK_API char __buffer__[__bufferSize__+1];
 }
 
