@@ -16,7 +16,7 @@ namespace fdk
 	typedef unsigned char byte_t;
 	typedef unsigned short word_t;
 	typedef unsigned long dword_t;
-	typedef unsigned long long	qword_t;
+	typedef unsigned long long qword_t;
 	
 	//< 基本运算符的自动实现: 需要T实现==和<
 	template <class T>
@@ -43,6 +43,12 @@ namespace fdk
 		return !(a < b);
 	}
 	//>
+
+	inline bool isBigEndian()
+	{
+		int n = 1;
+		return *(char*)&n == 0;
+	}
 
 	template <class T>
 	inline void zeroMemory(T& o)

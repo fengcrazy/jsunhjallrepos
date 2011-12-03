@@ -3,6 +3,40 @@
 
 namespace fdk
 {
+	namespace
+	{
+		inline bool isSpace(char c) // VC的isspace函数在debug中文时会assert
+		{
+			return c == ' ' || c == '\t' || c == '\r' || c == '\n' || c == '\v' || c == '\f';
+		}
+	}
+
+	FDK_API void trim(std::string& s)
+	{
+		if (s.empty())
+		{
+			return;
+		}
+		const char* begin = s.c_str();
+		const char* end = begin+s.length()-1;
+		while (isSpace(*begin))
+		{
+			++begin;
+		}
+		while (end > begin && isSpace(*end))
+		{
+			--end;
+		}
+		s = s.substr(begin-s.c_str(), end+1-begin);
+	}
+
+	FDK_API std::string trim_copy(const std::string& s)
+	{
+		std::string ret(s);
+		trim(ret);
+		return ret;
+	}
+
 	FDK_API std::string format(const char* fmt, ...)
 	{
 		va_list ap;
