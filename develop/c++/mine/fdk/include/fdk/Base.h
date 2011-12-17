@@ -9,6 +9,7 @@
 
 #include <memory.h>
 #include <assert.h>
+#include <stdlib.h>
 #include <string>
 
 namespace fdk
@@ -56,16 +57,25 @@ namespace fdk
 		memset(&o, 0, sizeof(T));
 	}
 
-	template<class T>
+	template <class T>
 	inline const T& minValue(const T& a, const T& b)
 	{
 		return (a < b) ? a : b;
 	}
 
-	template<class T>
+	template <class T>
 	inline const T& maxValue(const T& a, const T& b)
 	{
 		return (a > b) ? a : b;
+	}
+
+	// 需要先调srand(time(0));
+	template <class T>
+	inline T rand(const T& a, const T& b)
+	{
+		const T& minVal = minValue(a, b);
+		const T& maxVal = maxValue(a, b);
+		return (::rand()/RAND_MAX+1.0)*(maxValue-minVal+1) + minVal;
 	}
 	
 	FDK_API const char* toHexString(byte_t c);
