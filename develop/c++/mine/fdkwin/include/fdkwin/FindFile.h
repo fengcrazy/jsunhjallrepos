@@ -1,5 +1,5 @@
-#ifndef __FDKWIN_FINDFILE_H_INCLUDE
-#define __FDKWIN_FINDFILE_H_INCLUDE
+#ifndef __FDKWIN_FINDFILE_H_INCLUDE__
+#define __FDKWIN_FINDFILE_H_INCLUDE__
 #include "Base.h"
 
 namespace fdkwin

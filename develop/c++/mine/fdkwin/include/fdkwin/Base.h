@@ -1,5 +1,5 @@
-#ifndef __FDKWIN_BASE_H_INCLUDE
-#define __FDKWIN_BASE_H_INCLUDE
+#ifndef __FDKWIN_BASE_H_INCLUDE__
+#define __FDKWIN_BASE_H_INCLUDE__
 
 #ifdef FDKWIN_EXPORTS
 #define FDKWIN_API __declspec(dllexport)
