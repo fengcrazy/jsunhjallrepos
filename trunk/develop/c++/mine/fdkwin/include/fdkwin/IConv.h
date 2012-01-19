@@ -1,5 +1,5 @@
-#ifndef __FDKWIN_ICONV_H_INCLUDE
-#define __FDKWIN_ICONV_H_INCLUDE
+#ifndef __FDKWIN_ICONV_H_INCLUDE__
+#define __FDKWIN_ICONV_H_INCLUDE__
 #include "Base.h"
 #include <string>
 
