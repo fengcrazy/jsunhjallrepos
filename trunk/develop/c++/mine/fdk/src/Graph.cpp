@@ -94,20 +94,26 @@ namespace fdk
 		
 		bool Rect::isPointIn(const Point& point) const
 		{
-			return minPoint().x <= point.x && point.x < maxPoint().x
-				&& minPoint().y <= point.y && point.y < maxPoint().y;
+			const Point _minPoint = minPoint();
+			const Point _maxPoint = maxPoint();
+			return _minPoint.x <= point.x && point.x < _maxPoint.x
+				&& _minPoint.y <= point.y && point.y < _maxPoint.y;
 		}
 		
 		bool Rect::intersect(Rect& output, const Rect& o) const
 		{
-			if (o.maxPoint().x <= minPoint().x || maxPoint().x <= o.minPoint().x || 
-				o.maxPoint().y <= minPoint().y || maxPoint().y <= o.minPoint().y)
+			const Point _minPoint = minPoint();
+			const Point _maxPoint = maxPoint();
+			const Point o_minPoint = o.minPoint();
+			const Point o_maxPoint = o.maxPoint();
+			if (o_maxPoint.x <= _minPoint.x || _maxPoint.x <= o_minPoint.x || 
+				o_maxPoint.y <= _minPoint.y || _maxPoint.y <= o_minPoint.y)
 			{
 				return false;
 			}
-			output.orignPoint.reset(maxValue(minPoint().x, o.minPoint().x), maxValue(minPoint().y, o.minPoint().y));
-			const Point outOppositePoint(minValue(maxPoint().x, o.maxPoint().x), minValue(maxPoint().y, o.maxPoint().y));
-			output.size.reset(outOppositePoint.x-orignPoint.x, outOppositePoint.y-orignPoint.y);			
+			output.orignPoint.reset(maxValue(_minPoint.x, o_minPoint.x), maxValue(_minPoint.y, o_minPoint.y));
+			const Point outOppositePoint(minValue(_maxPoint.x, o_maxPoint.x), minValue(_maxPoint.y, o_maxPoint.y));
+			output.size.reset(outOppositePoint.x-orignPoint.x, outOppositePoint.y-orignPoint.y);
 			return true;
 		}
 	}
