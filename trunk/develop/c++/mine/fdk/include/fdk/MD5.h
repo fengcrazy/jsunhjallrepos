@@ -1,5 +1,5 @@
-#ifndef __FDK_MD5_H_INCLUDE
-#define __FDK_MD5_H_INCLUDE
+#ifndef __FDK_MD5_H_INCLUDE__
+#define __FDK_MD5_H_INCLUDE__
 #include "Base.h"
 #include <string>
 

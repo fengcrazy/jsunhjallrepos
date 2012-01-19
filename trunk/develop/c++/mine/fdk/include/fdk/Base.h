@@ -1,5 +1,5 @@
-#ifndef __FDK_BASE_H_INCLUDE
-#define __FDK_BASE_H_INCLUDE
+#ifndef __FDK_BASE_H_INCLUDE__
+#define __FDK_BASE_H_INCLUDE__
 
 #ifdef FDK_EXPORTS
 #define FDK_API __declspec(dllexport)
@@ -9,47 +9,15 @@
 
 #include <memory.h>
 #include <assert.h>
-#include <stdlib.h>
-#include <string>
 
 namespace fdk
 {
+	#include "_AutoOperator.h"
+
 	typedef unsigned char byte_t;
 	typedef unsigned short word_t;
 	typedef unsigned long dword_t;
-	typedef unsigned long long qword_t;
-	
-	//< 基本运算符的自动实现: 需要T实现==和<
-	template <class T>
-	inline bool operator!=(const T& a, const T& b)
-	{
-		return !(a == b);
-	}
-
-	template <class T>
-	inline bool operator>(const T& a, const T& b)
-	{
-		return b < a;
-	}
-
-	template <class T>
-	inline bool operator<=(const T& a, const T& b)
-	{
-		return !(b < a);
-	}
-
-	template <class T>
-	inline bool operator>=(const T& a, const T& b)
-	{
-		return !(a < b);
-	}
-	//>
-
-	inline bool isBigEndian()
-	{
-		int n = 1;
-		return *(char*)&n == 0;
-	}
+	typedef unsigned long long qword_t;	
 
 	template <class T>
 	inline void zeroMemory(T& o)
@@ -68,19 +36,7 @@ namespace fdk
 	{
 		return (a > b) ? a : b;
 	}
-
-	// 需要先调srand(time(0));
-	template <class T>
-	inline T rand(const T& a, const T& b)
-	{
-		const T& minVal = minValue(a, b);
-		const T& maxVal = maxValue(a, b);
-		return (::rand()/RAND_MAX+1.0)*(maxValue-minVal+1) + minVal;
-	}
-	
-	FDK_API const char* toHexString(byte_t c);
-	FDK_API std::string toHexString(const void* buffer, size_t size);
-
+		
 	const size_t __bufferSize__ = 1024*256;
 	extern FDK_API char __buffer__[__bufferSize__+1];
 }
@@ -109,13 +65,7 @@ namespace fdk
 	};
 }
 
-#define FDK_COMPILETIME_ASSERT_MSG(expr, msg) \
-	{ \
-		class _COMPLIE_ASSERT_FAIL__##msg {} _msg; \
-		sizeof((fdk::CompileTimeAssert<expr>)(_msg)); \
-	}
-
-#define FDK_COMPILETIME_ASSERT(expr) \
+#define FDK_COMPILE_ASSERT(expr) \
 	{ \
 		class _COMPLIE_ASSERT_FAIL {} _msg; \
 		sizeof((fdk::CompileTimeAssert<expr>)(_msg)); \
