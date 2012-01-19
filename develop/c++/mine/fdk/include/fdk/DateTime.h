@@ -1,5 +1,5 @@
-#ifndef __FDK_DATETIME_H_INCLUDE
-#define __FDK_DATETIME_H_INCLUDE
+#ifndef __FDK_DATETIME_H_INCLUDE__
+#define __FDK_DATETIME_H_INCLUDE__
 #include "Base.h"
 #include <string>
 #include <time.h>
