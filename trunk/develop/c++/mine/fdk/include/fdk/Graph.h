@@ -1,12 +1,12 @@
 #ifndef __FDK_GRAPH_H_INCLUDE__
 #define __FDK_GRAPH_H_INCLUDE__
-#include <fdk/Base.h>
+#include "Base.h"
 
 namespace fdk
 {
 	namespace graph
 	{
-		#include <fdk/_AutoOperator.h>
+		#include "_AutoOperator.h"
 		
 		class FDK_API Point
 		{
