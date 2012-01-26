@@ -1,6 +1,6 @@
 #ifndef __FDK_STRING_H_INCLUDE__
 #define __FDK_STRING_H_INCLUDE__
-#include "Base.h"
+#include <fdk/Base.h>
 #include <string>
 #include <sstream>
 

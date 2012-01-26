@@ -12,7 +12,7 @@
 
 namespace fdk
 {
-	#include "_AutoOperator.h"
+	#include <fdk/_AutoOperator.h>
 
 	typedef unsigned char byte_t;
 	typedef unsigned short word_t;
