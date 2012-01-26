@@ -1,6 +1,6 @@
 #ifndef __FDK_MD5_H_INCLUDE__
 #define __FDK_MD5_H_INCLUDE__
-#include "Base.h"
+#include <fdk/Base.h>
 #include <string>
 
 namespace fdk
